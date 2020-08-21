@@ -1,0 +1,71 @@
+#!/bin/bash
+### Job Name
+#PBS -N Selection
+### Project code
+#PBS -A UMEL0001
+#PBS -l walltime=12:00:00
+#PBS -q economy
+### Merge output and error files
+#PBS -j oe
+### Write stdout and stderr on runtime
+#PBS -k oe
+### Select 1 node with 36 CPUs
+#PBS -l select=1:ncpus=36
+### Send email on abort, begin and end
+#PBS -m abe
+### Specify mail recipient
+#PBS -M beomjop@andrew.cmu.edu
+
+##$ Load Matlab
+module load matlab/R2019a
+
+### Use bash
+export SHELL=/bin/bash
+
+### 1. Selection for each dataYear pre 2017
+echo "iPart: ${iPart}"
+
+matCMD="dataYear = '', Params_IntTempDens, "
+matCMD+="nPart = 4, iPart = ${iPart}, "
+matCMD+="intStartList = [5, 10, 15, 20, 30, 50, 75, 100, 125, 150, 200, 250, 300, 400, 500, 600, 700, 800], "
+#matCMD+="intStartList = [1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1850, 1900] % Mid Ocean"
+matCMD+="selectionAndVerticalIntegrationPchip_wrapper, exit"
+echo "${matCMD}"
+
+matlab -nodisplay -r "${matCMD}"
+# qsub -v iPart=1, selection_Int.pbs
+
+
+### 2. Selection for dataYear 2017-2018
+echo "iPart: ${iPart}"
+
+matCMD="dataYear = '_2017_2018', Params_IntTempDens, "
+matCMD+="nPart = 2, iPart = ${iPart}, "
+matCMD+="intStartList = [5, 10, 15, 20, 30, 50, 75, 100, 125, 150, 200, 250, 300, 400, 500, 600, 700, 800], "
+matCMD+="selectionAndVerticalIntegrationPchip_wrapper, exit"
+echo "${matCMD}"
+
+matlab -nodisplay -r "${matCMD}"
+# qsub -v iPart=1, selection_Int.pbs
+
+
+### 3. Merge two dataset
+matCMD="Params_IntTempDens, "
+matCMD+="nPart = [4 2], "
+matCMD+="intStartList = [5, 10, 15, 20, 30, 50, 75, 100, 125, 150, 200, 250, 300, 400, 500, 600, 700, 800], "
+matCMD+="mergeSelection_wrapper, exit"
+echo "${matCMD}"
+
+matlab -nodisplay -r "${matCMD}"
+# qsub selection_Int.pbs
+
+
+### 4. Create and Filter DataMask
+matCMD="dataYear = '_2007_2018', Params_IntTempDens, "
+matCMD+="refPres = 900, "
+matCMD+="intStartList = [5, 10, 15, 20, 30, 50, 75, 100, 125, 150, 200, 250, 300, 400, 500, 600, 700, 800], "
+matCMD+="create_filter_DataMask_wrapper, exit"
+echo "${matCMD}"
+
+matlab -nodisplay -r "${matCMD}"
+# qsub selection_Int.pbs
