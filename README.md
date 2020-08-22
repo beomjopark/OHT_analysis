@@ -1,6 +1,6 @@
 # OHT_Analysis
 
-This repository contains the reproducible code for "SPATIO-TEMPORAL LOCAL INTERPOLATION FOR QUANTIFYING GLOBAL OCEAN HEAT TRANSPORT FROM AUTONOMOUS OBSERVATIONS".
+This repository contains the reproducible code for [*SPATIO-TEMPORAL LOCAL INTERPOLATION FOR QUANTIFYING GLOBAL OCEAN HEAT TRANSPORT FROM AUTONOMOUS OBSERVATIONS*](https://www.overleaf.com/read/djzmqmpsmzgn).
 
 Data Files and resulting outputs can be accessible from NCAR GLADE file system: `./work/beomjop/OHC_dynamics/Data` and `./work/beomjop/OHC_dynamics/Results`.
 
