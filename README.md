@@ -5,7 +5,7 @@ This repository contains the reproducible code for "SPATIO-TEMPORAL LOCAL INTERP
 Data Files and resulting outputs can be accessible from NCAR GLADE file system: `./work/beomjop/OHC_dynamics/Data` and `./work/beomjop/OHC_dynamics/Results`.
 
 
-## Requirement
+## Requirements
 
 1. The code depends on [*TEOS-10* toolbox](http://www.teos-10.org/software.htm) for `MATLAB` on your system. In the wrappers, you'll see `../gsw_matlab` which is the relative path of the TEOS-10 toolbox.
 
@@ -16,11 +16,13 @@ Data Files and resulting outputs can be accessible from NCAR GLADE file system: 
 ## Pipeline
 
 0. The `MATLAB` code are intended to call `Params_...` first to load the parameter setups (although you would need to modify some of them depending on the `PBS -v` arguments.).
- 
 
-1. `selection_Int.pbs` : Profile selection and filtering procedure. 
 
-    PBS consists of 4 MATLAB calls, but you should comment out all except the one you are intended to call. Due to the computation time limit, selectionAndVerticalIntegrationPchip_wrapper splits the total dataset into nParts: Pre-2017 into 4 parts and 2017-18 into 2 parts. Check the `qsub` command to run which chunk (`iPart`) to process.
+### Local Interpolation
+
+1. `selection_Int.pbs` : Profile selection and filtering procedure.
+
+    PBS consists of 4 MATLAB calls, but you should comment out all except the one you are intended to call. Due to the computation time limit, `selectionAndVerticalIntegrationPchip_wrapper` splits the total dataset into `nParts`: Pre-2017 into 4 parts and 2017-18 into 2 parts. Check the `qsub` command to run which chunk (`iPart`) to process.
 
     `createDataMask_Distrib` will generate data mask for each pressure level in the list `intStartList`. `filterUsingMasks_Distrib` is actually a deprecated placeholder.
 
@@ -29,7 +31,7 @@ Data Files and resulting outputs can be accessible from NCAR GLADE file system: 
 
     If you are interested in EM estimate centered at specific month(`mon`), you could just run `fieldEM.pbs` with prespecified total EM iterations(`nIterEM`). KS18 paper corresponds to `mon=2,nIterEM=0`.
 
-    To account for all months, i.e., `mon=1:12`, use `fieldEM_allmonth.sh` with exact EM iteration number(`iter`). This is because the all month estimation requires significantly longer time to run since we need to estimate local GP at each 12 month windows. Also, somewhat due to MATLAB license, it's often the case PBS fails time to time for certain months. Be sure to check all month estimates are computed before continuing to the next EM iteration. When running allmonth, be sure to match the `intStartList` for both `fieldEM_mean.pbs` and `fieldEM_cov.pbs`.
+     Use `fieldEM_allmonth.sh` to account for all months, i.e., `mon=1:12`, with exact EM iteration number(`iter`). This is because the all month estimation requires significantly longer time to run since we need to estimate local GP at each 12 month windows. Also, somewhat due to MATLAB license, it's often the case PBS fails time to time for certain months. Be sure to check all month estimates are computed before continuing to the next EM iteration. When running all months, be sure to match the `intStartList` for both `fieldEM_mean.pbs` and `fieldEM_cov.pbs`.
 
 
 3. `anomPred_latDyn.pbs`: Kriging procedure.
@@ -37,7 +39,9 @@ Data Files and resulting outputs can be accessible from NCAR GLADE file system: 
     `isDeriv` specifies whether predictive derivative is of interest. When TRUE, it should accompany `targetVar` which is either 'lat' or 'lon'. Sister jobscript `anomPred_lonDyn.pbs` is intended to specify `isDeriv = true, targetVar = 'lon'`. Note that if you are doing debiasing procedure, you will see `isDeriv=false`.
 
 
-3.1 `adjustAnom_latDyn.pbs` : Debiasing procedure.
+### Debias
+
+1. `adjustAnom_latDyn.pbs` : Debiasing procedure.
 
 
 ## Misc
@@ -55,5 +59,3 @@ Data Files and resulting outputs can be accessible from NCAR GLADE file system: 
 2. Anomalous profiles
 
     Can this be ameliorated by using CORA dataset?
-
-
