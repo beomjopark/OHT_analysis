@@ -221,7 +221,7 @@ intStartList = [10, 15, 20, 30, 50, 75, 100, 125, 150, 200, 250, 300, 400, 500, 
                 % Compute TKE
                 zonRelVel = - (betaGrid(:,:,iLat) + meanLatpred.meanPredGrid + SLat.predGrid) .* distLatGrid ./ gsw_f(latGrid);
                 merRelVel = (betaGrid(:,:,iLong) + meanLonpred.meanPredGrid + SLon.predGrid) .* distLonGrid ./ gsw_f(latGrid);
-                TkeAbsGrid(presIdx, :, :) = (meanRefZonVel + zonRelVel).^ 2 + (meanRefMerVel + merRelVel) .^ 2;
+                TkeAbsGrid(presIdx, :, :) = 0.5 * ((meanRefZonVel + zonRelVel).^ 2 + (meanRefMerVel + merRelVel) .^ 2);
             end
 
             % Compute Integration
