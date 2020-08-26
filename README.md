@@ -1,6 +1,6 @@
 # OHT_Analysis
 
-This repository contains the reproducible code for [*SPATIO-TEMPORAL LOCAL INTERPOLATION FOR QUANTIFYING GLOBAL OCEAN HEAT TRANSPORT FROM AUTONOMOUS OBSERVATIONS*](https://www.overleaf.com/read/djzmqmpsmzgn).
+This repository contains the reproducible code for [*Spatio-Temporal Local Interpolation For Quantifying Global Ocean Heat Transport From Autonomous Observations*](https://www.overleaf.com/read/djzmqmpsmzgn).
 
 Data Files and resulting outputs can be accessible from NCAR GLADE file system: `./work/beomjop/OHC_dynamics/Data` and `./work/beomjop/OHC_dynamics/Results`.
 
@@ -22,7 +22,7 @@ Data Files and resulting outputs can be accessible from NCAR GLADE file system: 
 
 1. `selection_Int.pbs` : Profile selection and filtering procedure.
 
-    PBS consists of 4 MATLAB calls, but you should comment out all except the one you are intended to call. Due to the computation time limit, `selectionAndVerticalIntegrationPchip_wrapper` splits the total dataset into `nParts`: Pre-2017 into 4 parts and 2017-18 into 2 parts. Check the `qsub` command to run which chunk (`iPart`) to process.
+    The script consists of 4 MATLAB calls, but you should comment out all except the one you are intended to execute. Due to the computation time limit, `selectionAndVerticalIntegrationPchip_wrapper` splits the total dataset into `nParts`: Pre-2017 into 4 parts and 2017-18 into 2 parts. Check the `qsub` command to run which chunk (`iPart`) to process.
 
     `createDataMask_Distrib` will generate data mask for each pressure level in the list `intStartList`. `filterUsingMasks_Distrib` is actually a deprecated placeholder.
 
@@ -42,6 +42,8 @@ Data Files and resulting outputs can be accessible from NCAR GLADE file system: 
 ### Debias
 
 1. `adjustAnom_latDyn.pbs` : Debiasing procedure.
+
+    This job adjusts the kriged anomaly field and prepare the divided and extended residual to run `fieldEM_cov.pbs` with `isAdjusted=true` and the corresponding `nAdjust`.
 
 
 ## Misc
