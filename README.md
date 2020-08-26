@@ -43,7 +43,12 @@ Data Files and resulting outputs can be accessible from NCAR GLADE file system: 
 
 1. `adjustAnom_latDyn.pbs` : Debiasing procedure.
 
-    This job adjusts the kriged anomaly field and prepare the divided and extended residual to run `fieldEM_cov_adjusted.pbs`.
+    This job adjusts the kriged anomaly field and prepare the divided and extended residual to refit the covariance parameters and kriging. Be sure to run `anomPred_latDyn.pbs` with `isDeriv=false` BEFORE running the debiasing procedure.
+
+
+2. `fieldEM_cov_adjusted.pbs` & `anomPred_latDyn_adjusted.pbs`
+
+    Refit covariance parameters and produce the kriged field after the correction. These codes are equivalent to scripts without `_adjusted` if `nAdjust=0` is specified.
 
 
 ## Misc
