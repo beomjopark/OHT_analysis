@@ -73,7 +73,7 @@ else
             computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, isStandardize, fluxType, eqBorder, isAdjusted, isAbsolute, iterEM);
         else
             if isResetRes
-                disp('Reset Residual')
+                fprintf('Reset Residual')
                 if is2step
                     divideDataToMonthsSeason(meanTag, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, fluxType, eqBorder, isAdjusted, isAbsolute);
                 else
@@ -84,7 +84,7 @@ else
             end
 
             % CHECK TO INCLUDE REFPRESS
-            disp('Anomaly Computation')
+            fprintf('Anomaly Computation')
             if isMid
                 computeAnomaliesSeasonSpaceTime_Profile(kernelType, month, typeTag, responseTag, verticalSelection, [900, intStartList], dataYear, windowType, windowSize, minNumberOfObs, isDeriv, targetVar, isStandardize, isAdjusted, isAbsolute, nAdjust, false, iterEM);
             else

@@ -33,6 +33,8 @@ Data Files and resulting outputs can be accessible from NCAR GLADE file system: 
 
      Use `fieldEM_allmonth.sh` to account for all months, i.e., `mon=1:12`, with exact EM iteration number(`iter`). This is because the all month estimation requires significantly longer time to run since we need to estimate local GP at each 12 month windows. Also, somewhat due to MATLAB license, it's often the case PBS fails time to time for certain months. Be sure to check all month estimates are computed before continuing to the next EM iteration. When running all months, be sure to match the `intStartList` for both `fieldEM_mean.pbs` and `fieldEM_cov.pbs`.
 
+     Note that the procedures require `Distrib_Computing_Toolbox` & `Optimization_Toolbox`.
+
 
 3. `anomPred_latDyn.pbs`: Kriging procedure.
 
