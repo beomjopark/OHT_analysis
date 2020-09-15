@@ -23,12 +23,12 @@ module load matlab/R2019a
 export SHELL=/bin/bash
 
 ### Run the executable
-#echo "iterEM: ${iter}"
+echo "iterEM: ${iter}"
 echo "Month: ${mon}"
 
 matCMD="Params_LatFlux_Step1, "
 matCMD+="month = ${mon}, "
-matCMD+="nIterEM = 3, "
+matCMD+="nIterEM = ${iter}, "
 
 if [ ${mon} = 1:12 ]
 then
@@ -43,4 +43,4 @@ echo "${matCMD}"
 
 matlab -nodisplay -r "${matCMD}"
 
-# qsub -v mon=11 fieldEM.pbs
+# qsub -v mon=11,iter=3 fieldEM.pbs

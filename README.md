@@ -29,7 +29,7 @@ Data Files and resulting outputs can be accessible from NCAR GLADE file system: 
 
 2. `fieldEM.pbs` : Mean and Covariance parameter estimation procedure.
 
-    If you are interested in EM estimate centered at specific month(`mon`), you could just run `fieldEM.pbs` with prespecified total EM iterations(`nIterEM`). KS18 paper corresponds to `mon=2,nIterEM=0`.
+    If you are interested in EM estimate centered at specific month(`mon`), you could just run `fieldEM.pbs` with prespecified total EM iterations(`nIterEM`). Note that jobscript use the `iter` parameter to specify `nIterEM` (Not to be confused with `allmonth` script). KS18 paper corresponds to `mon=2,iter=0`.
 
      Use `fieldEM_allmonth.sh` to account for all months, i.e., `mon=1:12`, with exact EM iteration number(`iter`). This is because the all month estimation requires significantly longer time to run since we need to estimate local GP at each 12 month windows. Also, somewhat due to MATLAB license, it's often the case PBS fails time to time for certain months. Be sure to check all month estimates are computed before continuing to the next EM iteration. When running all months, be sure to match the `intStartList` for both `fieldEM_mean.pbs` and `fieldEM_cov.pbs`.
 
