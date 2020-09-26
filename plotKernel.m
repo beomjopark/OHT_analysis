@@ -1,4 +1,5 @@
 
+
   [latGrid,longGrid] = meshgrid(linspace(-89.5,89.5,180), linspace(20.5,379.5,360));
   nGrid = numel(latGrid);
 gridList = int64(linspace(1, nGrid, 100));
@@ -109,13 +110,20 @@ figure;
 
         predGridAccum = zeros(size(latGrid));
         for iGrid = gridList
-            if exist(['./Results/',destFolder,'/anomaly',responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,'_',...
-                                num2str(iMonth,'%02d'),'_',num2str(iYear),'_',num2str(iGrid),'.mat'])
-            load(['./Results/',destFolder,'/anomaly',responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,'_',...
-                                num2str(iMonth,'%02d'),'_',num2str(iYear),'_',num2str(iGrid),'.mat']);
+            if isDeriv
+                srcName = ['./Results/',destFolder,'/anomaly',responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,targetVar,'Deriv_',...
+                    num2str(iMonth,'%02d'),'_',num2str(iYear),'_',num2str(iGrid),'.mat'];
+            else
+                srcName = ['./Results/',destFolder,'/anomaly',responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,'_',...
+                                num2str(iMonth,'%02d'),'_',num2str(iYear),'_',num2str(iGrid),'.mat'];
             end
-            predGridAccum = predGridAccum + predGrid;
+            if exist(srcName)
+                load(srcName);
+                predGridAccum = predGridAccum + predGrid;
+            end
         end
+        
+        predGridAccum(predGridAccum == 0) = NaN;
 
         % Determine ylim from the first Year/Month
 %{
@@ -125,9 +133,16 @@ figure;
 
 %}
         surfm(latGrid,longGrid,predGridAccum); 
-        title(['Smoother: lat',num2str(latGrid(iGrid)),' lon',num2str(longGrid(iGrid)),'_ ',...
+        
+        if isDeriv
+        title([targetVar,' Anomaly Smoother: ',...
             num2str(iMonth,'%02d'),'/',num2str(iYear)]);
-        caxis([0, 1]);
+        caxis([0, 0.8]);
+        else
+        title(['Anomaly Smoother: ',...
+            num2str(iMonth,'%02d'),'/',num2str(iYear)]);
+                caxis([0, 1]);
+        end
 
         load coast;
         plotm(lat,long,'k');
@@ -144,3 +159,17 @@ figure;
         
         end
     end
+
+mkdir(['./Figures/',destFolder])
+if isDeriv
+    saveName = [responseTag,verticalSelection,dataYear,'_anom_movie_',targetVar]
+else
+    saveName = [responseTag,verticalSelection,dataYear,'_anom_movie']
+end
+myVideo = VideoWriter(['./Figures/',destFolder,'/',saveName,'.avi']);
+
+    myVideo.FrameRate = 5;
+    myVideo.Quality = 100;
+    open(myVideo);
+    writeVideo(myVideo, M);
+    close(myVideo);
