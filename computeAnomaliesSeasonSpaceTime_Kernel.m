@@ -204,8 +204,9 @@ function computeAnomaliesSeasonSpaceTime_Kernel(kernelType, month, typeTag, resp
 
 %            predVarianceGrid = zeros(size(latGrid));
             tic;
-            parfor iGrid = 1:nGrid
-%                predGrid = zeros(size(latGrid));
+%            parfor iGrid = 1:nGrid
+            for iGrid = int64(linspace(1, nGrid, 100))%1:nGrid
+                predGrid = sparse(size(latGrid,1), size(latGrid,2));
 
                 nResGrid_cur = nResGrid_mon(iGrid);
                 thetasOpt_cur = thetasOpt_mon(iGrid);
@@ -299,13 +300,25 @@ function computeAnomaliesSeasonSpaceTime_Kernel(kernelType, month, typeTag, resp
                 responseResSel = [zeros(size(responseResSel)); ones(nInjectDay, 1)];
 
                 nRes = length(responseResSel);
+
+
+                %% Indexing for grid
+                gridIdx = find(latGridFlat > latMin & latGridFlat < latMax & longGridFlat > longMin & longGridFlat < longMax);
+                switch windowType
+                    case 'spherical'
+                      is_in_circle = distance(predLat, predLong, latGridFlat(gridIdx), longGridFlat(gridIdx),...
+                                        referenceEllipsoid('GRS80', 'm')) < refDist;
+                      gridIdx = gridIdx(is_in_circle);
+                    case 'box_var'
+                        gridIdx = find(latGridFlat > latMin & latGridFlat < latMax & longGridFlat > longMin & longGridFlat < longMax);
+                end
                 
                 if isDeriv
                     covObs = feval(['spaceTimeCovariance',kernelType,'_vec'],...
                         profLatAggrSel, profLongAggrSel, profJulDayAggrSel,...
                         thetasOpt_cur,thetaLatOpt_cur,thetaLongOpt_cur,thetatOpt_cur);
                     covGridObs = feval(['spaceTimeCovariance',kernelType,'Deriv'],...
-                        latGridFlat, longGridFlat, midJulDay,...
+                        latGridFlat(gridIdx), longGridFlat(gridIdx), midJulDay,...
                         profLatAggrSel,profLongAggrSel,profJulDayAggrSel,...
                         thetasOpt_cur,thetaLatOpt_cur,thetaLongOpt_cur,thetatOpt_cur,...
                         targetVar);
@@ -314,12 +327,12 @@ function computeAnomaliesSeasonSpaceTime_Kernel(kernelType, month, typeTag, resp
                         profLatAggrSel, profLongAggrSel, profJulDayAggrSel,...
                         thetasOpt_cur,thetaLatOpt_cur,thetaLongOpt_cur,thetatOpt_cur);
                     covGridObs = feval(['spaceTimeCovariance',kernelType],...
-                        latGridFlat, longGridFlat, midJulDay,...
+                        latGridFlat(gridIdx), longGridFlat(gridIdx), midJulDay,...
                         profLatAggrSel,profLongAggrSel,profJulDayAggrSel,...
-                        thetasOpt_cur,thetaLatOpt_cur,thetaLongOpt_cur,thetatOpt_cur);            
+                        thetasOpt_cur,thetaLatOpt_cur,thetaLongOpt_cur,thetatOpt_cur);
                 end
                 
-                predGrid = covGridObs * ((covObs + sigmaOpt_cur.^2 * eye(nRes)) \ responseResSel);
+                predGrid(gridIdx) = covGridObs * ((covObs + sigmaOpt_cur.^2 * eye(nRes)) \ responseResSel);
 
                 if isStandardize
                     predGrid = predGrid .* stdRes;
@@ -328,14 +341,14 @@ function computeAnomaliesSeasonSpaceTime_Kernel(kernelType, month, typeTag, resp
                 
                 if isDeriv
                     parsave(['./Results/',destFolder,'/anomaly',responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,targetVar,'Deriv_',...
-                    num2str(predMonth,'%02d'),'_',num2str(predYear),'_',num2str(iGrid),'.mat'], iGrid, reshape(predGrid, size(latGrid)));
+                    num2str(predMonth,'%02d'),'_',num2str(predYear),'_',num2str(iGrid),'.mat'], iGrid, predGrid);
                 else
                     if is2step
                         parsave(['./Results/',destFolder,'/anomaly',typeTag,fluxType,responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,'_',...
-                            num2str(predMonth,'%02d'),'_',num2str(predYear),'_',num2str(iGrid),'.mat'], iGrid, reshape(predGrid, size(latGrid)));                    
+                            num2str(predMonth,'%02d'),'_',num2str(predYear),'_',num2str(iGrid),'.mat'], iGrid, predGrid);                    
                     else
                         parsave(['./Results/',destFolder,'/anomaly',responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,'_',...
-                                num2str(predMonth,'%02d'),'_',num2str(predYear),'_',num2str(iGrid),'.mat'], iGrid, reshape(predGrid, size(latGrid)));
+                                num2str(predMonth,'%02d'),'_',num2str(predYear),'_',num2str(iGrid),'.mat'], iGrid, predGrid);
                     end
                 end
 
