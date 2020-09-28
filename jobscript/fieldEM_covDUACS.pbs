@@ -1,0 +1,49 @@
+#!/bin/bash
+### Job Name
+#PBS -N EM_Cov_DUACS
+### Project code
+#PBS -A UMEL0001
+#PBS -l walltime=12:00:00
+#PBS -q economy
+### Merge output and error files
+#PBS -j oe
+### Write stdout and stderr on runtime
+#PBS -k oe
+### Select 1 node with 36 CPUs
+#PBS -l select=1:ncpus=36
+### Send email on abort, begin and end
+#PBS -m abe
+### Specify mail recipient
+#PBS -M beomjop@andrew.cmu.edu
+
+##$ Load Matlab
+module load matlab/R2019a
+
+### Use bash
+export SHELL=/bin/bash
+
+### Run the executable
+echo "iterEM: ${iter}"
+echo "Month: ${mon}"
+
+matCMD="Params_LatFlux_Step1, "
+matCMD+="responseTag = 'DUACS', "
+matCMD+="month = ${mon}, "
+matCMD+="iterEM = ${iter}, "
+matCMD+="intStartList = [10], "
+
+if [ ${mon} = 1:12 ]
+then
+    echo "FullMonth!"
+    matCMD+="isFullMonth = true, "
+fi
+
+matCMD+="pause(5), "
+matCMD+="estimateFieldEM_cov_wrapper, "
+matCMD+="exit"
+echo "${matCMD}"
+
+matlab -nodisplay -r "${matCMD}"
+#matlab -nodisplay -r "Params_LatFlux_Step1, estimateFieldEM_wrapper, exit"
+
+# qsub -v iter=0,mon=1 fieldEM_cov.pbs
