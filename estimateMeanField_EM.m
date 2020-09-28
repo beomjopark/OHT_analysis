@@ -110,15 +110,17 @@ function estimateMeanField_EM(kernelType, month, meanTag, typeTag, responseTag, 
   else
       if strcmp(responseTag, 'Sal')
           load(['./Data/',typeTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat'])
+      elseif strcmp(responseTag, 'DUACS')
+          load(['./Data/',typeTag,'DUACS','Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);          
       else % 'Temp', 'Dens'
           load(['./Data/',typeTag,'TempDens','Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
       end
+      load(['./Data/dataMask',verticalSelection,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);    
       %{
       if numel(intStart) > 1
         load(['./Data/dataMask','Relative',num2str(min(intStart)),'_',num2str(max(intStart)),dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);    
       else
       %}
-        load(['./Data/dataMask',verticalSelection,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);    
 %      end
   end
 
@@ -215,6 +217,8 @@ function estimateMeanField_EM(kernelType, month, meanTag, typeTag, responseTag, 
               responseProf = [targetDynhProf targetDynhProf(leftBoundaryIdx) targetDynhProf(rightBoundaryIdx)];
 %              responseProf = [intDensProf intDensProf(leftBoundaryIdx) intDensProf(rightBoundaryIdx)];
 %              responseProf = [intDensRes intDensRes(leftBoundaryIdx) intDensRes(rightBoundaryIdx)];
+          case 'DUACS'
+              responseProf = [targetADTProf targetADTProf(leftBoundaryIdx) targetADTProf(rightBoundaryIdx)];
           case 'Sal'
               responseProf = [targetSalProfPchip targetSalProfPchip(leftBoundaryIdx) targetSalProfPchip(rightBoundaryIdx)];
       end

@@ -131,6 +131,10 @@ function divideDataToMonthsSeason(meanTag, typeTag, responseTag, verticalSelecti
                         intDensResMonth = intDensRes(idx);
                         save(['./Data/Monthly/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'.mat'],...
                             'profLatAggrMonth','profLongAggrMonth','profJulDayAggrMonth','intDensResMonth');
+                    case 'DUACS'
+                        intDensResMonth = targetADTRes(idx); % NAMING CONVENTION
+                        save(['./Data/Monthly/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'.mat'],...
+                            'profLatAggrMonth','profLongAggrMonth','profJulDayAggrMonth','intDensResMonth');
                     case 'Sal'
                         targetSalResMonth = targetSalRes(idx);
                         save(['./Data/Monthly/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'.mat'],...

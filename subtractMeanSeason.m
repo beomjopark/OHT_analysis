@@ -109,6 +109,9 @@ function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, da
             if exist('is_thresh_filter', 'var')
                 disp('The Profiles are thresholded.')
             end
+        case 'DUACS'
+            load(['./Data/',typeTag,'DUACS','Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
+            load(['./Results/','meanField',responseTag,meanTag,tag,verticalSelection,dataYear,adjustTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),EMTag,'.mat']);
         case 'Sal'
             load(['./Data/',typeTag,'Prof',tag,verticalSelection,'Filtered_',num2str(minNumberOfObs),'.mat']);
             load(['./Results/meanField',responseTag,meanTag,tag,verticalSelection,'_',windowSizeTag,'_',num2str(minNumberOfObs),'.mat']);
@@ -144,6 +147,8 @@ function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, da
           profResponse = targetTempProfPchip;
         case 'Dens'
           profResponse = targetDynhProf;
+        case 'DUACS'
+          profResponse = targetADTProf;
         case 'Sal'
           profResponse = targetSalProfPchip;
     end
@@ -295,7 +300,15 @@ function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, da
               intDensRes = intDensRes ./ stdRes;
             end
             save(['./Data/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,EMTag,'.mat'],...
-        'profLatAggrSel','profLongAggrSel','profYearAggrSel','profJulDayAggrSel','profFloatIDAggrSel','intDensRes', 'stdRes', 'isNanRes');
+        'profLatAggrSel','profLongAggrSel','profJulDayAggrSel','profFloatIDAggrSel','intDensRes', 'stdRes', 'isNanRes');
+        case 'DUACS'
+            targetADTRes = profRes(~isNanRes);          
+            if isStandardize
+              stdRes = std(targetADTRes, 'omitnan');
+              targetADTRes = targetADTRes ./ stdRes;
+            end
+            save(['./Data/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,EMTag,'.mat'],...
+        'profLatAggrSel','profLongAggrSel','profJulDayAggrSel','targetADTRes', 'stdRes', 'isNanRes');          
         case 'Sal'
             targetSalRes = profRes(~isNanRes);          
             if isStandardize

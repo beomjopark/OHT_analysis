@@ -50,6 +50,8 @@ function extendedDataSeason(meanTag, typeTag, responseTag, verticalSelection, da
                             S1.targetTempResMonth = [];
                         case 'Dens'
                             S1.intDensResMonth = [];
+                        case 'DUACS'
+                            S1.intDensResMonth = [];  %NAME CONVENTION for LOCALMLE
                         case 'Sal'
                             S1.targetSalResMonth = [];
                     end
@@ -85,6 +87,8 @@ function extendedDataSeason(meanTag, typeTag, responseTag, verticalSelection, da
                         case 'Temp'
                             S3.targetTempResMonth = [];
                         case 'Dens'
+                            S3.intDensResMonth = [];
+                        case 'DUACS'
                             S3.intDensResMonth = [];
                         case 'Sal'
                             S3.targetSalResMonth = [];
@@ -129,6 +133,10 @@ function extendedDataSeason(meanTag, typeTag, responseTag, verticalSelection, da
                     save(['./Data/Extended/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'_extended.mat'],...
                         'targetTempRes3Months','profLatAggr3Months','profLongAggr3Months','profJulDayAggr3Months');
                 case 'Dens'
+                    intDensRes3Months = [S1.intDensResMonth S2.intDensResMonth S3.intDensResMonth];
+                    save(['./Data/Extended/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'_extended.mat'],...
+                        'intDensRes3Months','profLatAggr3Months','profLongAggr3Months','profJulDayAggr3Months');
+                case 'DUACS'
                     intDensRes3Months = [S1.intDensResMonth S2.intDensResMonth S3.intDensResMonth];
                     save(['./Data/Extended/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'_extended.mat'],...
                         'intDensRes3Months','profLatAggr3Months','profLongAggr3Months','profJulDayAggr3Months');
