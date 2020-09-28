@@ -122,16 +122,18 @@ function computeMeanAnomalies(kernelType, month, typeTag, responseTag, verticalS
 %        load(['./Data/dataMask','target','Temp',verticalSelection,dataYear,'_',num2str(minNumberOfObs),'.mat']);
     else
         % Data here is used to grab intEnd
-        data = load(['./Data/',typeTag,'TempDens','Prof','PchipPotTemp',verticalSelection,dataYear,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
+        if ~strcmp(responseTag, 'DUACS')
+            data = load(['./Data/',typeTag,'TempDens','Prof','PchipPotTemp',verticalSelection,dataYear,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
+            intEnd = data.intEnd;
+            clear data;
+        end
 %{
         if numel(data.intStart) > 1
             load(['./Data/dataMask','Relative',num2str(min(data.intStart)),'_',num2str(max(data.intStart)),dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),'_w',num2str(windowSize),'.mat']);    
         else
 %}
-            load(['./Data/dataMask',verticalSelection,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);    
+        load(['./Data/dataMask',verticalSelection,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);    
 %        end
-        intEnd = data.intEnd;
-        clear data;
     end
     maskJohn = ncread('./RG_climatology/RG_ArgoClim_Temperature_2016.nc','BATHYMETRY_MASK',[1 1 25],[Inf Inf 1]);
     maskJohn(maskJohn == 0) = 1;
