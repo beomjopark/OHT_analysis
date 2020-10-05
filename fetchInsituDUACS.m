@@ -95,7 +95,15 @@ cnt = 1
 NNgridIdx = NaN(size(ARGO.profLatAggrSel));
 distGap = NaN(size(ARGO.profLatAggrSel));
 
-ARGO.profSpatialAggrSel = [ARGO.profLatAggrSel; ARGO.profLongAggrSel];
+
+
+% Convert Lon to 0~360 range
+profLonConvSel = ARGO.profLongAggrSel;
+profLonConvSel(profLonConvSel > 360) = profLonConvSel(profLonConvSel > 360) - 360;
+ARGO.profSpatialAggrSel = [ARGO.profLatAggrSel; profLonConvSel];
+
+
+
 targetADTProf = NaN(size(ARGO.targetDynhProf));
 for iYear = yearList
     disp(iYear);
