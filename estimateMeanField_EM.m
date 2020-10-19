@@ -142,44 +142,57 @@ function estimateMeanField_EM(kernelType, month, meanTag, typeTag, responseTag, 
     if is2step
         fitMLE = load(['./Results/localMLESpaceTime',kernelType,typeTag, fluxType,responseTag,verticalSelection,'Season_',num2str(month,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_Eq',num2str(eqBorder),prevEMTag,'.mat']);
     else
-        switch numel(month)
-          case 12  % Full month provided
-              thetasOpt = cell(numel(month), 1);
-              thetaLatOpt = cell(numel(month), 1);
-              thetaLongOpt = cell(numel(month), 1);
-              thetatOpt = cell(numel(month), 1);
-              sigmaOpt = cell(numel(month), 1);
-              isFminErrorTemp = zeros([numel(month), size(latGrid)]);
-              for iMonth = month
-                  fitMLE = load(['./Results/localMLESpaceTime',kernelType,responseTag,verticalSelection,'Season_',num2str(iMonth,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,prevEMTag,'.mat']);
-                  latGrid = fitMLE.latGrid;
-                  longGrid = fitMLE.longGrid;
-                  thetasOpt{iMonth} = fitMLE.thetasOpt;
-                  thetaLatOpt{iMonth} = fitMLE.thetaLatOpt;
-                  thetaLongOpt{iMonth} = fitMLE.thetaLongOpt;
-                  thetatOpt{iMonth} = fitMLE.thetatOpt;
-                  sigmaOpt{iMonth} = fitMLE.sigmaOpt;
-                  isFminErrorTemp(iMonth,:,:) = (isnan(thetasOpt{iMonth}) | isnan(thetaLatOpt{iMonth}) | isnan(thetaLongOpt{iMonth}) | isnan(thetatOpt{iMonth}) | isnan(sigmaOpt{iMonth}));
+
+    end
+
+
+    switch numel(month)
+      case 12  % Full month provided
+          thetasOpt = cell(numel(month), 1);
+          thetaLatOpt = cell(numel(month), 1);
+          thetaLongOpt = cell(numel(month), 1);
+          thetatOpt = cell(numel(month), 1);
+          sigmaOpt = cell(numel(month), 1);
+          isFminErrorTemp = zeros([numel(month), size(latGrid)]);
+          for iMonth = month
+              if is2step
+                srcName = ['./Results/localMLESpaceTime',kernelType,typeTag, fluxType,responseTag,verticalSelection,'Season_',num2str(iMonth,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_Eq',num2str(eqBorder),prevEMTag,'.mat']
+              else
+                srcName = ['./Results/localMLESpaceTime',kernelType,responseTag,verticalSelection,'Season_',num2str(iMonth,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,prevEMTag,'.mat']
               end
-              isFminError = squeeze(any(isFminErrorTemp, 1));
-              clear isFminErrorTemp
-          case 1
-              fitMLE = load(['./Results/localMLESpaceTime',kernelType,responseTag,verticalSelection,'Season_',num2str(month,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,prevEMTag,'.mat']);
+              fitMLE = load(srcName);
               latGrid = fitMLE.latGrid;
               longGrid = fitMLE.longGrid;
-              thetasOpt = fitMLE.thetasOpt;
-              thetaLatOpt = fitMLE.thetaLatOpt;
-              thetaLongOpt = fitMLE.thetaLongOpt;
-              thetatOpt = fitMLE.thetatOpt;
-              sigmaOpt = fitMLE.sigmaOpt;
+              thetasOpt{iMonth} = fitMLE.thetasOpt;
+              thetaLatOpt{iMonth} = fitMLE.thetaLatOpt;
+              thetaLongOpt{iMonth} = fitMLE.thetaLongOpt;
+              thetatOpt{iMonth} = fitMLE.thetatOpt;
+              sigmaOpt{iMonth} = fitMLE.sigmaOpt;
+              isFminErrorTemp(iMonth,:,:) = (isnan(thetasOpt{iMonth}) | isnan(thetaLatOpt{iMonth}) | isnan(thetaLongOpt{iMonth}) | isnan(thetatOpt{iMonth}) | isnan(sigmaOpt{iMonth}));
+          end
+          isFminError = squeeze(any(isFminErrorTemp, 1));
+          clear isFminErrorTemp
+      case 1
+          if is2step
+            srcName = ['./Results/localMLESpaceTime',kernelType,typeTag, fluxType,responseTag,verticalSelection,'Season_',num2str(month,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_Eq',num2str(eqBorder),prevEMTag,'.mat']
+          else
+            srcName = ['./Results/localMLESpaceTime',kernelType,responseTag,verticalSelection,'Season_',num2str(month,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,prevEMTag,'.mat']
+          end
+          fitMLE = load(srcName);
+          latGrid = fitMLE.latGrid;
+          longGrid = fitMLE.longGrid;
+          thetasOpt = fitMLE.thetasOpt;
+          thetaLatOpt = fitMLE.thetaLatOpt;
+          thetaLongOpt = fitMLE.thetaLongOpt;
+          thetatOpt = fitMLE.thetatOpt;
+          sigmaOpt = fitMLE.sigmaOpt;
 %{
-              nll = fitMLE.nll;
-              nResGrid = fitMLE.nResGrid;
+          nll = fitMLE.nll;
+          nResGrid = fitMLE.nResGrid;
 %}
-              isFminError = (isnan(thetasOpt) | isnan(thetaLatOpt) | isnan(thetaLongOpt) | isnan(thetatOpt) | isnan(sigmaOpt));
-          otherwise
-            error('Not implemented');
-        end
+          isFminError = (isnan(thetasOpt) | isnan(thetaLatOpt) | isnan(thetaLongOpt) | isnan(thetatOpt) | isnan(sigmaOpt));
+      otherwise
+        error('Not implemented');
     end
   end
 
@@ -202,12 +215,10 @@ function estimateMeanField_EM(kernelType, month, meanTag, typeTag, responseTag, 
 
   if is2step
       switch typeTag
-          case 'lat'
-              responseProf = [profLatFluxAggrSel profLatFluxAggrSel(leftBoundaryIdx) profLatFluxAggrSel(rightBoundaryIdx)];
-          case 'lon'
-              responseProf = [profLonFluxAggrSel profLonFluxAggrSel(leftBoundaryIdx) profLonFluxAggrSel(rightBoundaryIdx)];
-          otherwise %intlatlon
+          case {'intlat', 'intlon'}
               responseProf = [intFluxProf intFluxProf(leftBoundaryIdx) intFluxProf(rightBoundaryIdx)];
+          otherwise %{'lat', 'lon'}
+              responseProf = [profFluxAggrSel profFluxAggrSel(leftBoundaryIdx) profFluxAggrSel(rightBoundaryIdx)];
       end
   else
       switch responseTag
@@ -245,7 +256,7 @@ function estimateMeanField_EM(kernelType, month, meanTag, typeTag, responseTag, 
   if strcmp(windowType, 'spherical')
     % Determine reference distance
     refDist = distance(0, 180, 0+windowSizeMean, 180,...
-                            referenceEllipsoid('GRS80', 'm'))
+                            referenceEllipsoid('WGS84', 'm'))
   end
   
   tic;
@@ -281,7 +292,7 @@ function estimateMeanField_EM(kernelType, month, meanTag, typeTag, responseTag, 
       switch windowType
         case 'spherical'
           is_in_circle = distance(latSel, longSel, profLatAggrSel(idx), profLongAggrSel(idx),...
-                            referenceEllipsoid('GRS80', 'm')) < refDist;
+                            referenceEllipsoid('WGS84', 'm')) < refDist;
           idx = idx(is_in_circle);
         case 'box_var'
           idx = find(profLatAggrSel > latMin & profLatAggrSel < latMax & profLongAggrSel > longMin & profLongAggrSel < longMax);          
