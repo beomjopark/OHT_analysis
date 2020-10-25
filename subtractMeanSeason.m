@@ -88,7 +88,7 @@ function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, da
 
   if is2step
     load(['./Data/',typeTag,fluxType,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
-    load(['./Results/meanField',typeTag,fluxType,responseTag,meanTag,tag,verticalSelection,dataYear,adjustTag,absoluteTag,windowTypeTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),'_Eq',num2str(eqBorder),EMTag,'.mat']);
+    load(['./Results/meanField',typeTag,fluxType,responseTag,meanTag,tag,verticalSelection,dataYear,adjustTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),'_Eq',num2str(eqBorder),EMTag,'.mat']);
   else
     switch responseTag
         case 'Temp'
@@ -134,12 +134,10 @@ function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, da
 %  profRes = zeros(1, nProf);
   if is2step
     switch typeTag
-      case 'lat'
-        profResponse = profLatFluxAggrSel;
-      case 'lon'
-        profResponse = profLonFluxAggrSel;
-      otherwise
+      case {'intlat', 'intlon'}
         profResponse = intFluxProf;
+      otherwise
+        profResponse = profFluxAggrSel;
     end
   else
     switch responseTag
@@ -258,23 +256,7 @@ function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, da
 
   if is2step
     switch typeTag
-      case 'lat'
-          latFluxRes = profRes(~isNanRes);
-          if isStandardize
-            stdRes = std(latFluxRes, 'omitnan');
-            latFluxRes = latFluxRes ./ stdRes;
-          end
-          save(['./Data/',typeTag, fluxType,responseTag,'Res',verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'_Eq',num2str(eqBorder),EMTag,'.mat'],...
-      'profLatAggrSel','profLongAggrSel','profJulDayAggrSel','latFluxRes', 'stdRes', 'isNanRes');
-      case 'lon'
-          lonFluxRes = profRes(~isNanRes);
-          if isStandardize
-            stdRes = std(lonFluxRes, 'omitnan');
-            lonFluxRes = lonFluxRes ./ stdRes;
-          end
-          save(['./Data/',typeTag, fluxType,responseTag,'Res',verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'_Eq',num2str(eqBorder),EMTag,'.mat'],...
-      'profLatAggrSel','profLongAggrSel','profJulDayAggrSel','lonFluxRes', 'stdRes', 'isNanRes');
-      otherwise
+      case {'intlat', 'intlon'}
           intFluxRes = profRes(~isNanRes);
           if isStandardize
             stdRes = std(intFluxRes, 'omitnan');
@@ -282,6 +264,14 @@ function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, da
           end
           save(['./Data/',typeTag, fluxType,responseTag,'Res',verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'_Eq',num2str(eqBorder),EMTag,'.mat'],...
       'profLatAggrSel','profLongAggrSel','profJulDayAggrSel','intFluxRes', 'stdRes', 'isNanRes');
+      otherwise
+          FluxRes = profRes(~isNanRes);
+          if isStandardize
+            stdRes = std(FluxRes, 'omitnan');
+            FluxRes = FluxRes ./ stdRes;
+          end
+          save(['./Data/',typeTag, fluxType,responseTag,'Res',verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'_Eq',num2str(eqBorder),EMTag,'.mat'],...
+      'profLatAggrSel','profLongAggrSel','profJulDayAggrSel','FluxRes', 'stdRes', 'isNanRes');
     end
   else
     switch responseTag

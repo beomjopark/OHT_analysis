@@ -107,18 +107,14 @@ function divideDataToMonthsSeason(meanTag, typeTag, responseTag, verticalSelecti
             profJulDayAggrMonth = profJulDayAggrSel(idx);
             if is2step
                 switch typeTag
-                    case 'lat'
-                        latFluxResMonth = latFluxRes(idx);
-                        save(['./Data/Monthly/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'.mat'],...
-                      'profLatAggrMonth','profLongAggrMonth','profJulDayAggrMonth','latFluxResMonth');
-                    case 'lon'
-                        lonFluxResMonth = lonFluxRes(idx);
-                        save(['./Data/Monthly/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'.mat'],...
-                      'profLatAggrMonth','profLongAggrMonth','profJulDayAggrMonth','lonFluxResMonth');
-                    otherwise
+                    case {'intlat', 'intlon'}
                         intFluxResMonth = intFluxRes(idx);
                         save(['./Data/Monthly/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'.mat'],...
                       'profLatAggrMonth','profLongAggrMonth','profJulDayAggrMonth','intFluxResMonth');
+                    otherwise
+                        FluxResMonth = FluxRes(idx);
+                        save(['./Data/Monthly/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'.mat'],...
+                      'profLatAggrMonth','profLongAggrMonth','profJulDayAggrMonth','FluxResMonth');
                 end
             else        
 %                profFloatIDAggrMonth = profFloatIDAggrSel(idx);
