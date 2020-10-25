@@ -1,6 +1,18 @@
 %% Fetch closest grid point of DUACS matching the insitu Argo
 
+varType = 'latVel' % 'Dynh'; 'lonVel'
 %addpath(genpath('../OHC_dynamics'));
+
+
+switch varType
+  case 'Dynh'
+    typeName = 'adt';
+  case 'latVel' % zonal 
+    typeName = 'ugos';
+  case 'lonVel' % meridional
+    typeName = 'vgos';
+end
+
 
 %srcFolder = 'D:/dataset-duacs-rep-global-merged-allsat-phy-l4/' % LOCAL
 srcFolder = './Misc/CMEMS/dataset-duacs-rep-global-merged-allsat-phy-l4/' % SERVER
@@ -103,8 +115,7 @@ profLonConvSel(profLonConvSel > 360) = profLonConvSel(profLonConvSel > 360) - 36
 ARGO.profSpatialAggrSel = [ARGO.profLatAggrSel; profLonConvSel];
 
 
-
-targetADTProf = NaN(size(ARGO.targetDynhProf));
+targetProf = NaN(size(ARGO.targetDynhProf));
 for iYear = yearList
     disp(iYear);
     for iMonth = 1:12
@@ -117,13 +128,23 @@ for iYear = yearList
             %% Find closeset Spatial Grid
             [NNgridIdx(isTargetProf), distGap(isTargetProf)] = dsearchn(spatialGridDUACS, ARGO.profSpatialAggrSel(:,isTargetProf)');
 
-            %% Fetch ADT
-            ADT = ncread([srcFolder, '/', num2str(iYear), '/', num2str(iMonth, '%02d'), '/',cell2mat(dayNames(iDay))], 'adt');
-            targetADTProf(isTargetProf) = ADT(NNgridIdx(isTargetProf));
 
+            %% Fetch ADT
+            res = ncread([srcFolder, '/', num2str(iYear), '/', num2str(iMonth, '%02d'), '/',cell2mat(dayNames(iDay))], typeName);
+
+            targetProf(isTargetProf) = res(NNgridIdx(isTargetProf));
             cnt = cnt + 1;
         end
     end
+end
+
+switch varType
+  case 'ADT'
+    targetADTProf = targetProf;
+  case 'latVel'
+    targetlatVelProf = targetProf;
+  case 'lonVel'
+    targetlonVelProf = targetProf;
 end
 
 profLatAggrSel = ARGO.profLatAggrSel;
@@ -131,8 +152,22 @@ profLongAggrSel = ARGO.profLongAggrSel;
 profJulDayAggrSel = ARGO.profJulDayAggrSel;
 profspatialAggrSel_Interp = spatialGridDUACS(NNgridIdx, :);
 
-saveName = ['./Data/intDUACSProf','PchipPotTemp','Relative10',dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat'];
-save(saveName,...
-    'profLatAggrSel','profLongAggrSel','profJulDayAggrSel',...
-    'profJulDayAggrSel_Interp', 'profspatialAggrSel_Interp',...
-    'targetADTProf');
+saveName = ['./Data/int',varType,'DUACSProf','PchipPotTemp','Relative10',dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat'];
+
+switch varType
+  case 'ADT'
+    save(saveName,...
+        'profLatAggrSel','profLongAggrSel','profJulDayAggrSel',...
+        'profJulDayAggrSel_Interp', 'profspatialAggrSel_Interp',...
+        'targetADTProf');
+  case 'latVel'
+    save(saveName,...
+        'profLatAggrSel','profLongAggrSel','profJulDayAggrSel',...
+        'profJulDayAggrSel_Interp', 'profspatialAggrSel_Interp',...
+        'targetlatVelProf');
+  case 'lonVel'
+    save(saveName,...
+        'profLatAggrSel','profLongAggrSel','profJulDayAggrSel',...
+        'profJulDayAggrSel_Interp', 'profspatialAggrSel_Interp',...
+        'targetlonVelProf');
+end
