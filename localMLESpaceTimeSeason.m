@@ -124,7 +124,7 @@ function localMLESpaceTimeSeason(kernelType, month, typeTag, responseTag, vertic
     if strcmp(windowType, 'spherical')
         % Determine reference distance
         refDist = distance(0, 180, 0+windowSizeCov, 180,...
-                                referenceEllipsoid('GRS80', 'm'))
+                                referenceEllipsoid('WGS84', 'm'))
     end
     
     % Discard previous itearIdx, if it exists
@@ -217,7 +217,7 @@ function localMLESpaceTimeSeason(kernelType, month, typeTag, responseTag, vertic
             switch windowType
                 case 'spherical'
                   is_in_circle = distance(predLat, predLong, profLat3Months(idx), profLong3Months(idx),...
-                                    referenceEllipsoid('GRS80', 'm')) < refDist;
+                                    referenceEllipsoid('WGS84', 'm')) < refDist;
                   idx = idx(is_in_circle);
                 case 'box_var'
                   idx = find(profLatAggrSel > latMin & profLatAggrSel < latMax & profLongAggrSel > longMin & profLongAggrSel < longMax);

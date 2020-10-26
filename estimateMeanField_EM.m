@@ -139,13 +139,6 @@ function estimateMeanField_EM(kernelType, month, meanTag, typeTag, responseTag, 
     sigmaOpt = NaN(size(latGrid));
     isFminError = zeros(size(latGrid), "logical");
   else
-    if is2step
-        fitMLE = load(['./Results/localMLESpaceTime',kernelType,typeTag, fluxType,responseTag,verticalSelection,'Season_',num2str(month,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_Eq',num2str(eqBorder),prevEMTag,'.mat']);
-    else
-
-    end
-
-
     switch numel(month)
       case 12  % Full month provided
           thetasOpt = cell(numel(month), 1);
