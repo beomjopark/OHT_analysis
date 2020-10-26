@@ -70,7 +70,7 @@ else
         if isResetRes
             fprintf('Reset Residual')
             if is2step
-                divideDataToMonthsSeason(meanTag, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, fluxType, eqBorder, isAdjusted, isAbsolute);
+                divideDataToMonthsSeason(meanTag, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, fluxType, eqBorder, isAdjusted, isAbsolute, nAdjust, iterEM, isFullMonth);
             else
                divideDataToMonthsSeason(meanTag, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, [], [], isAdjusted, isAbsolute, nAdjust, iterEM, isFullMonth);
             end
@@ -79,11 +79,12 @@ else
         end
 
 
-       poolobj = parpool(18, 'IdleTimeout', 1200);
         if is2step  % This case is for each latflux / lonflux
-            computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, isStandardize, fluxType, eqBorder, isAdjusted, isAbsolute, iterEM);
+            poolobj = parpool(20, 'IdleTimeout', 1200);
+            computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, isStandardize, fluxType, eqBorder, isAdjusted, isAbsolute, nAdjust, iterEM);
+            computeMeanAnomalies(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, meanTag, windowType, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, fluxType, eqBorder, isAdjusted, isAbsolute, nAdjust, iterEM);
         else
-
+            poolobj = parpool(18, 'IdleTimeout', 1200);
             % CHECK TO INCLUDE REFPRESS
             fprintf('Anomaly Computation')
             if isMid
