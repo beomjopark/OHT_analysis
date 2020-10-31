@@ -66,9 +66,15 @@ switch targetVar
     otherwise
         
 end
-profLatAggrSel = DUACS.profLatAggrSel;
-profLongAggrSel = DUACS.profLongAggrSel;
-profJulDayAggrSel = DUACS.profJulDayAggrSel;
+% Filter NaN
+nanCheck = isnan(profFluxAggrSel);
+profFluxAggrSel = profFluxAggrSel(~nanCheck);
+
+profLatAggrSel = DUACS.profLatAggrSel(~nanCheck);
+profLongAggrSel = DUACS.profLongAggrSel(~nanCheck);
+profJulDayAggrSel = DUACS.profJulDayAggrSel(~nanCheck);
+
+
 DynhMaskName = ['./Data/dataMask',verticalSelection,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']
 
 
