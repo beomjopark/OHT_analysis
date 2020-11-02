@@ -223,7 +223,11 @@ function localMLESpaceTimeSeason_Reestimate(kernelType, month, typeTag, response
             profJulDay3Months = S.profJulDayAggr3Months;
             switch typeTag
                 case 'int'
-                    responseRes3Months = S.intDensRes3Months;
+                    if strcmp(responseTag, 'Temp')
+                        responseRes3Months = S.targetTempRes3Months;
+                    else
+                        responseRes3Months = S.intDensRes3Months;
+                    end
                 case {'intlat', 'intlon'}
                     responseRes3Months = S.intFluxRes3Months;
                 otherwise

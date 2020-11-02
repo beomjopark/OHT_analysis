@@ -127,7 +127,7 @@ function computeMeanAnomalies(kernelType, month, typeTag, responseTag, verticalS
         end
     else
         % Data here is used to grab intEnd
-        if ~strcmp(responseTag, 'DUACS')
+        if ~strcmp(responseTag, 'DUACS') || ~strcmp(responseTag, 'DUCASESA') 
             data = load(['./Data/',typeTag,'TempDens','Prof','PchipPotTemp',verticalSelection,dataYear,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
             intEnd = data.intEnd;
             clear data;
@@ -152,9 +152,9 @@ function computeMeanAnomalies(kernelType, month, typeTag, responseTag, verticalS
     % Conversion: Deg / m
     [latGrid,longGrid] = meshgrid(linspace(-89.5,89.5,180),linspace(20.5,379.5,360));
     latDistGrid = 1 ./ distance(latGrid - 0.5, longGrid, latGrid + 0.5, longGrid,...
-                            referenceEllipsoid('GRS80', 'm'));
+                            referenceEllipsoid('WGS84', 'm'));
     longDistGrid = 1 ./ distance(latGrid, longGrid - 0.5, latGrid, longGrid + 0.5,...
-                            referenceEllipsoid('GRS80', 'm'));
+                            referenceEllipsoid('WGS84', 'm'));
 
     %% Movie goes here
     % Save directory

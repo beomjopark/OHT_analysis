@@ -91,16 +91,7 @@ function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, da
     load(['./Results/meanField',typeTag,fluxType,responseTag,meanTag,tag,verticalSelection,dataYear,adjustTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),'_Eq',num2str(eqBorder),EMTag,'.mat']);
   else
     switch responseTag
-        case 'Temp'
-            switch verticalSelection
-                case 'MidMeso'
-                    load(['./Data/',typeTag,responseTag,'Prof600','Filtered_',num2str(minNumberOfObs),'.mat']);
-                    load(['./Results/meanField',responseTag,meanTag,'target600','_',num2str(windowSize),'_',num2str(minNumberOfObs),'.mat']);
-                case 'FullMeso'
-                    load(['./Data/',typeTag,responseTag,'Prof200','Filtered_',num2str(minNumberOfObs),'.mat']);
-                    load(['./Results/meanField',responseTag,meanTag,'target200','_',num2str(windowSize),'_',num2str(minNumberOfObs),'.mat']);
-            end
-        case 'Dens'
+        case {'Temp', 'Dens'}
             load(['./Data/',typeTag,'TempDens','Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
             load(['./Results/','meanField',responseTag,meanTag,tag,verticalSelection,dataYear,adjustTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),YFtag,EMTag,'.mat']);
 %            load(['./Data/','pre_thresh/',typeTag,'TempDens','Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSize),'.mat']);
@@ -142,7 +133,7 @@ function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, da
   else
     switch responseTag
         case 'Temp'
-          profResponse = targetTempProfPchip;
+          profResponse = intTempProf;
         case 'Dens'
           profResponse = targetDynhProf;
         case 'DUACS'
@@ -281,7 +272,7 @@ function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, da
               stdRes = std(targetTempRes, 'omitnan');
               targetTempRes = targetTempRes ./ stdRes;
             end
-            save(['./Data/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),EMTag,'.mat'],...
+            save(['./Data/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,EMTag,'.mat'],...
         'profLatAggrSel','profLongAggrSel','profJulDayAggrSel','targetTempRes', 'stdRes', 'isNanRes');
         case 'Dens'
             intDensRes = profRes(~isNanRes);          
