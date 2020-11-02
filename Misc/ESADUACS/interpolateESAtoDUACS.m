@@ -1,8 +1,12 @@
+addpath(genpath('./Util'));
+
 %% Fetch DUACS
 srcFolder = './Misc/CMEMS/dataset-duacs-rep-global-merged-allsat-phy-l4/' % SERVER
 
 % Read DUACS
-yearList = 2007:2018;   nYear = numel(yearList);
+%%yearList = 2007:2018; % Now from the -v year=2007:2018
+
+nYear = numel(yearList);
 monthList = 1:12;
 
 
@@ -42,6 +46,7 @@ spatialGridESA = [latGridESA(:), longGridESA(:)];
 
 
 % Collect the time stamp
+tic;
 timeList = [];
 dayNamesCell = {};
 for iYear = yearList
@@ -52,24 +57,33 @@ for iYear = yearList
 
         dayNames = {curMonDir.name};
         dayNames(1:2) = []; % Remove ., ..
+
+        isNC = cellfun(@(name) strcmp(name(end-1:end), 'nc'), dayNames);
+        dayNames = dayNames(isNC);
+
         for iDay = 1:length(dayNames)
             timeList = [timeList, ncread([srcFolder, '/', num2str(iYear), '/', num2str(iMonth, '%02d'), '/',cell2mat(dayNames(iDay))], 'time')];
             dayNamesCell{end+1} = cell2mat(dayNames(iDay));
         end
     end
 end
+toc;
 
 dateList = datenum(datetime(1981,1,1) + seconds(timeList)); % For ESA2017
 parsedDateList = datevec(dateList);
 parsedDateList = parsedDateList(:, 1:3);
 
-
+poolobj = parpool(6, 'IdleTimeout', 1200); % Constrained to 
+tic
 parfor cnt = 1:size(parsedDateList,1)
     SST = ncread([srcFolder, '/', num2str(parsedDateList(cnt,1)), '/', num2str(parsedDateList(cnt,2), '%02d'), '/',dayNamesCell{cnt}], 'analysed_sst');
     goodIdx = ~isnan(SST);
 
-    SSTInterp = griddata(latGridESA(goodIdx), longGridESA(goodIdx), SST(goodIdx),...
-        latGridDUACS, longGridDUACS, 'cubic');
-    save([srcFolder,'/', num2str(parsedDateList(cnt,1)), '/', num2str(parsedDateList(cnt,2), '%02d'), '/',dayNamesCell{cnt}(1:(end-3)),'_','interp','.mat'], 'latGridDUACS', 'longGridDUACS', 'SSTInterp');
+%    SSTInterp = griddata(latGridESA(goodIdx), longGridESA(goodIdx), SST(goodIdx),...
+%        latGridDUACS, longGridDUACS, 'natural');
+    F = scatteredInterpolant(latGridESA(goodIdx), longGridESA(goodIdx), SST(goodIdx), 'natural', 'none');
+    SSTInterp = F(latGridDUACS, longGridDUACS);
+    parsave_interp([srcFolder,'/', num2str(parsedDateList(cnt,1)), '/', num2str(parsedDateList(cnt,2), '%02d'), '/',dayNamesCell{cnt}(1:(end-3)),'_','interp','.mat'],...
+        latGridDUACS, longGridDUACS, SSTInterp)
 end
-
+toc
