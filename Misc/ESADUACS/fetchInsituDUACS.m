@@ -32,6 +32,10 @@ for iYear = yearList
 
         dayNames = {curMonDir.name};
         dayNames(1:2) = []; % Remove ., ..
+
+        isNC = cellfun(@(name) strcmp(name(end-1:end), 'nc'), dayNames);
+        dayNames = dayNames(isNC);
+
         for iDay = 1:length(dayNames)
             timeList = [timeList, ncread([srcFolder, '/', num2str(iYear), '/', num2str(iMonth, '%02d'), '/',cell2mat(dayNames(iDay))], 'time')];
         end
