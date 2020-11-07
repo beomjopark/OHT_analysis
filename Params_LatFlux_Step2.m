@@ -22,6 +22,7 @@ is2step = true
 % Kriging: Prediction on derivative or original
 isDeriv = false
 targetVar = typeTag % 'lon'
+isProfile = false;
 
 % 2 step specification
 isStandardize = true

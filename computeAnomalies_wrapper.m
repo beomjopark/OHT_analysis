@@ -34,6 +34,7 @@ end
 %iterEM = 0 : control from PBS
 
 %% Run Selection
+%% CHECK isProfile
 nCore = feature('numcores')
 refPres = 900
 
@@ -84,20 +85,21 @@ else
             computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, isStandardize, fluxType, eqBorder, isAdjusted, isAbsolute, nAdjust, iterEM);
             computeMeanAnomalies(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, meanTag, windowType, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, fluxType, eqBorder, isAdjusted, isAbsolute, nAdjust, iterEM);
         else
-            poolobj = parpool(18, 'IdleTimeout', 1200);
             % CHECK TO INCLUDE REFPRESS
             fprintf('Anomaly Computation')
-            if isMid
-                computeAnomaliesSeasonSpaceTime_Profile(kernelType, month, typeTag, responseTag, verticalSelection, [900, intStartList], dataYear, windowType, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, isStandardize, [], [], isAdjusted, false, nAdjust, iterEM);
+            if isProfile
+                poolobj = parpool(18, 'IdleTimeout', 1200);
+                if isMid
+                    computeAnomaliesSeasonSpaceTime_Profile(kernelType, month, typeTag, responseTag, verticalSelection, [900, intStartList], dataYear, windowType, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, isStandardize, [], [], isAdjusted, false, nAdjust, iterEM);
+                else
+                    computeAnomaliesSeasonSpaceTime_Profile(kernelType, month, typeTag, responseTag, verticalSelection, [10, 900], dataYear, windowType, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, isStandardize, [], [], isAdjusted, false, nAdjust, iterEM); % isAbsolute is ineffective here
+    %                checkAnomaliesSeasonSpaceTime_Profile(kernelType, month, typeTag, responseTag, verticalSelection, [intStartList, 900], dataYear, windowSize, minNumberOfObs, isDeriv, targetVar, isStandardize, isAdjusted, isAbsolute, nAdjust, false);
+                end
             else
-                computeAnomaliesSeasonSpaceTime_Profile(kernelType, month, typeTag, responseTag, verticalSelection, [10, 900], dataYear, windowType, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, isStandardize, [], [], isAdjusted, false, nAdjust, iterEM); % isAbsolute is ineffective here
-%                checkAnomaliesSeasonSpaceTime_Profile(kernelType, month, typeTag, responseTag, verticalSelection, [intStartList, 900], dataYear, windowSize, minNumberOfObs, isDeriv, targetVar, isStandardize, isAdjusted, isAbsolute, nAdjust, false);
+                poolobj = parpool(24, 'IdleTimeout', 1200);
+                computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, isStandardize, [], [], isAdjusted, isAbsolute, nAdjust, iterEM);
+                computeMeanAnomalies(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, meanTag, windowType, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, [], [], isAdjusted, isAbsolute, nAdjust, iterEM);
             end
-%{
-            computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, isStandardize, [], [], isAdjusted, isAbsolute, nAdjust, iterEM);
-            computeMeanAnomalies(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, meanTag, windowType, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, [], [], isAdjusted, isAbsolute, nAdjust, iterEM);
-%}
-
 
         end
        delete(poolobj);

@@ -17,6 +17,7 @@ kernelType = 'Matern' %'Matern'; %'ExpGeom'
 month = 2
 % If gridding OHT, set flag and responseTag, typeTag
 is2step = false %true;
+isProfile = false;
 
 % Anomaly Prediction of velocity
 isDeriv = false

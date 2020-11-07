@@ -22,6 +22,7 @@ is2step = false %true;
 % Kriging: Prediction on derivative or original
 isDeriv = false
 targetVar = 'lat' % 'lon'
+isProfile = false;
 
 % 2 step specification
 isStandardize = true
