@@ -37,9 +37,11 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
 
     switch windowType
         case 'spherical'
+          isSpherical = true;
           windowTypeTag = 'spherical'
           windowSizeMargined = windowSizeKrig * 2;
         otherwise
+          isSpherical = false;
           windowTypeTag = []
           windowSizeMargined = windowSizeKrig;
     end
@@ -177,6 +179,24 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
                                 referenceEllipsoid('WGS84', 'm'))
     end
 
+    % responseName
+    switch typeTag
+        case 'int'
+          if strcmp(responseTag, 'Temp')
+              responseName = 'targetTempRes3Months';
+%              responseRes3Months = S.targetTempRes3Months;
+          else
+              responseName = 'intDensRes3Months';            
+%              responseRes3Months = S.intDensRes3Months;
+          end
+        case {'intlat', 'intlon'}
+            responseName = 'intFluxRes3Months';
+%            responseRes3Months = S.intFluxRes3Months;
+        otherwise %latlon
+            responseName = 'FluxRes3Months';
+%            responseRes3Months = S.FluxRes3Months;
+    end    
+
 
     for iYear = startYear:endYear
         for iMonth = 1:12
@@ -219,6 +239,11 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
                 thetatOpt_cur = thetatOpt_mon(iGrid);
                 sigmaOpt_cur = sigmaOpt_mon(iGrid);
 
+                if (isnan(thetasOpt_cur) || isnan(thetaLatOpt_cur) || isnan(thetaLongOpt_cur) || isnan(thetatOpt_cur) || isnan(sigmaOpt_cur))
+                  predGrid(iGrid) = NaN;
+                  continue;
+                end
+
                 predLat = latGrid(iGrid);
                 predLong = longGrid(iGrid);
 
@@ -244,27 +269,16 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
                 profLatAggr3Months = S.profLatAggr3Months;
                 profLongAggr3Months = S.profLongAggr3Months;
                 profJulDayAggr3Months = S.profJulDayAggr3Months;
-                switch typeTag
-                    case 'int'
-                      if strcmp(responseTag, 'Temp')
-                          responseRes3Months = S.targetTempRes3Months;
-                      else
-                          responseRes3Months = S.intDensRes3Months;
-                      end
-                    case {'intlat', 'intlon'}
-                        responseRes3Months = S.intFluxRes3Months;
-                    otherwise %latlon
-                        responseRes3Months = S.FluxRes3Months;
-                end
+                responseRes3Months = S.(responseName);
+
 
                 idx = find(profLatAggr3Months > latMin & profLatAggr3Months < latMax & profLongAggr3Months > longMin & profLongAggr3Months < longMax);
-                switch windowType
-                    case 'spherical'
-                      is_in_circle = distance(predLat, predLong, profLatAggr3Months(idx), profLongAggr3Months(idx),...
-                                        referenceEllipsoid('WGS84', 'm')) < refDist;
-                      idx = idx(is_in_circle);
-                    case 'box_var'
-                        idx = find(profLatAggr3Months > latMin & profLatAggr3Months < latMax & profLongAggr3Months > longMin & profLongAggr3Months < longMax);
+                if isSpherical
+                  is_in_circle = distance(predLat, predLong, profLatAggr3Months(idx), profLongAggr3Months(idx),...
+                                    referenceEllipsoid('WGS84', 'm')) < refDist;
+                  idx = idx(is_in_circle);
+                else
+                  idx = find(profLatAggr3Months > latMin & profLatAggr3Months < latMax & profLongAggr3Months > longMin & profLongAggr3Months < longMax);
                 end
                 
                 if isempty(idx) || (nResGrid_cur == 0)
@@ -320,11 +334,10 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
 %                end
                 
                 if isDeriv
-                    switch targetVar
-                        case 'lat'
-                            thetaScale2 = thetaLatOpt_cur.^2;
-                        otherwise
-                            thetaScale2 = thetaLongOpt_cur.^2;
+                    if strcmp(targetVar, 'lat')
+                      thetaScale2 = thetaLatOpt_cur.^2;
+                    else % lon
+                      thetaScale2 = thetaLongOpt_cur.^2;
                     end
                     predVarianceGrid(iGrid) = 3 * thetasOpt_cur ./ thetaScale2  - covGridObs*((covObs + sigmaOpt_cur^2*eye(nRes))\(covGridObs'));
                 else

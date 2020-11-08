@@ -37,11 +37,13 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
 
     switch windowType
         case 'spherical'
-          windowTypeTag = 'spherical'
-          windowSizeMargined = windowSizeKrig * 2;
+            isSpherical = true;
+            windowTypeTag = 'spherical'
+            windowSizeMargined = windowSizeKrig * 2;
         otherwise
-          windowTypeTag = []
-          windowSizeMargined = windowSizeKrig;
+            isSpherical = false;
+            windowTypeTag = []
+            windowSizeMargined = windowSizeKrig;
     end
 
     if isempty(isAdjusted)
@@ -195,6 +197,23 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
                                 referenceEllipsoid('GRS80', 'm'))
     end
 
+    % responseName
+    switch typeTag
+        case 'int'
+          if strcmp(responseTag, 'Temp')
+              responseName = 'targetTempRes3Months';
+%              responseRes3Months = S.targetTempRes3Months;
+          else
+              responseName = 'intDensRes3Months';            
+%              responseRes3Months = S.intDensRes3Months;
+          end
+        case {'intlat', 'intlon'}
+            responseName = 'intFluxRes3Months';
+%            responseRes3Months = S.intFluxRes3Months;
+        otherwise %latlon
+            responseName = 'FluxRes3Months';
+%            responseRes3Months = S.FluxRes3Months;
+    end
 
     for iYear = startYear:endYear
         for iMonth = 1:12
@@ -269,25 +288,16 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
                 profLatAggr3Months = S.profLatAggr3Months;
                 profLongAggr3Months = S.profLongAggr3Months;
                 profJulDayAggr3Months = S.profJulDayAggr3Months;
-                switch typeTag
-                    case 'int'
-                        responseRes3Months = S.intDensRes3Months;
-                    case 'lat'
-                        responseRes3Months = S.latFluxRes3Months;
-                    case 'lon'
-                        responseRes3Months = S.lonFluxRes3Months;
-                    otherwise %intlatlon
-                        responseRes3Months = S.intFluxRes3Months;
-                end
+                responseRes3Months = S.(responseName);
+
 
                 idx = find(profLatAggr3Months > latMin & profLatAggr3Months < latMax & profLongAggr3Months > longMin & profLongAggr3Months < longMax);
-                switch windowType
-                    case 'spherical'
+                if isSpherical
                       is_in_circle = distance(predLat, predLong, profLatAggr3Months(idx), profLongAggr3Months(idx),...
                                         referenceEllipsoid('GRS80', 'm')) < refDist;
                       idx = idx(is_in_circle);
-                    case 'box_var'
-                        idx = find(profLatAggr3Months > latMin & profLatAggr3Months < latMax & profLongAggr3Months > longMin & profLongAggr3Months < longMax);
+                else
+                    idx = find(profLatAggr3Months > latMin & profLatAggr3Months < latMax & profLongAggr3Months > longMin & profLongAggr3Months < longMax);
                 end
                 
                 if isempty(idx) || (nResGrid_cur == 0)
