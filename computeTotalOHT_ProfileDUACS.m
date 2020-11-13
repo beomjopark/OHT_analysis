@@ -138,6 +138,12 @@ function computeTotalOHT_ProfileDUACS(responseTag, verticalSelection, targetPres
         meanPredGrid = zeros(size(latGrid));
     end
 
+    % ZONAL CHANGE
+    if strcmp(targetVar, 'lat')
+        predRes = - predRes;
+        meanPredGrid = - meanPredGrid;
+    end
+    
     if isAbsolute
         load(['../Misc/AGVA/','meanZonVelRef',num2str(refPres),'.mat'], 'meanRefZonVel');
         load(['../Misc/AGVA/','meanMerVelRef',num2str(refPres),'.mat'], 'meanRefMerVel');
