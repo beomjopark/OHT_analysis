@@ -110,6 +110,7 @@ function computeMeanAnomalies(kernelType, month, typeTag, responseTag, verticalS
     %tag = 'TrendSeason_t2_SpaceExp';
     %tag = 'TrendSeasonSpaceTimeExp';
     %tag = 'TrendSeasonSpaceExp';
+    tag = 'PchipPotTemp';
 
     % Load Data mask
     if is2step
@@ -122,14 +123,14 @@ function computeMeanAnomalies(kernelType, month, typeTag, responseTag, verticalS
             % For each target Pressure
             data = load(['./Data/',typeTag,fluxType,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
             load(['./Data/dataMask',typeTag,responseTag,verticalSelection,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
-            intEnd = data.intEnd;
+%            intEnd = data.intEnd;
             clear data;            
         end
     else
         % Data here is used to grab intEnd
         if ~strcmp(responseTag, 'DUACS') || ~strcmp(responseTag, 'DUCASESA') 
             data = load(['./Data/',typeTag,'TempDens','Prof','PchipPotTemp',verticalSelection,dataYear,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
-            intEnd = data.intEnd;
+%            intEnd = data.intEnd;
             clear data;
         end
 %{
