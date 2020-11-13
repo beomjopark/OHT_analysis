@@ -110,8 +110,8 @@ function estimateMeanField_EM(kernelType, month, meanTag, typeTag, responseTag, 
   else
       if strcmp(responseTag, 'Sal')
           load(['./Data/',typeTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat'])
-      elseif strcmp(responseTag, 'DUACS')
-          load(['./Data/',typeTag,'DUACS','Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);          
+      elseif strcmp(responseTag, 'DUACS') || strcmp(responseTag, 'ESA') % ESA TEMP
+          load(['./Data/',typeTag,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
       else % 'Temp', 'Dens'
           load(['./Data/',typeTag,'TempDens','Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
       end
@@ -223,6 +223,8 @@ function estimateMeanField_EM(kernelType, month, meanTag, typeTag, responseTag, 
 %              responseProf = [intDensRes intDensRes(leftBoundaryIdx) intDensRes(rightBoundaryIdx)];
           case 'DUACS'
               responseProf = [targetADTProf targetADTProf(leftBoundaryIdx) targetADTProf(rightBoundaryIdx)];
+          case 'ESA'
+              responseProf = [targetSSTProf targetSSTProf(leftBoundaryIdx) targetSSTProf(rightBoundaryIdx)];              
           case 'Sal'
               responseProf = [targetSalProfPchip targetSalProfPchip(leftBoundaryIdx) targetSalProfPchip(rightBoundaryIdx)];
       end

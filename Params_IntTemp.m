@@ -1,7 +1,7 @@
 %% Setup for Step 1: Anomaly lat Flux
 % Data Type
 typeTag = 'int' % target; % 'lat' 'lon'
-responseTag = 'Temp' %'Sal'; 'Temp'; %'Flux'; if is2step
+responseTag = 'ESA' %'Temp' %'Sal'; 'Temp'; %'Flux'; if is2step
 dataYear = '_2007_2018' % Use Merged Data
 
 % Filter

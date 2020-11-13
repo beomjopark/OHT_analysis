@@ -77,10 +77,10 @@ else
             close all;
 
             % MLE
-            localMLESpaceTimeSeason(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, windowType,windowSize, minNumberOfObs, is2step, false, isStandardize, fluxType, [], isAdjusted, isAbsolute, nAdjust, iterEM, isFullMonth);
+            localMLESpaceTimeSeason(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, windowType,windowSize, minNumberOfObs, is2step, false, isStandardize, fluxType, eqBorder, isAdjusted, isAbsolute, nAdjust, iterEM, isFullMonth);
 
             % Reoptimize parfor bugs
-            localMLESpaceTimeSeason_Reestimate(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, false, isStandardize, fluxType, [], isAdjusted, isAbsolute, nAdjust, iterEM, isFullMonth);
+            localMLESpaceTimeSeason_Reestimate(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, false, isStandardize, fluxType, eqBorder, isAdjusted, isAbsolute, nAdjust, iterEM, isFullMonth);
         end
         delete(poolobj);
     end
