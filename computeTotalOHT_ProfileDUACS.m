@@ -50,10 +50,12 @@ function computeTotalOHT_ProfileDUACS(responseTag, verticalSelection, targetPres
     if isAdjusted
       adjustTag = 'Adjusted';
       adjustNumTag = ['Adjusted', num2str(nAdjust)];
-      windowSizeTag = windowSizeFullTag;
+      adjustPrevNumTag = [];
+%      windowSizeTag = windowSizeFullTag;
     else
       adjustTag = [];
       adjustNumTag = [];
+      adjustPrevNumTag = [];
     end
 
     if isAbsolute
@@ -123,7 +125,7 @@ function computeTotalOHT_ProfileDUACS(responseTag, verticalSelection, targetPres
     % MeanField itself is not adjusted: will be added later
     load(['./Results/','meanField',responseTag,meanTag,tag,verticalSelection,dataYear,[],[],windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),EMTag,'.mat']);
     % Adjusted pred Anomaly
-    destFolder = ['anomaly_','int',responseTag,adjustNumTag,[],windowTypeTag,'_w',windowSizeFullTag,'_',kernelType,'_',verticalSelection,'Season_',num2str(month,'%02d'),EMOutTag];
+    destFolder = ['anomaly_','int',responseTag,adjustNumTag,[],windowTypeTag,'_w',windowSizeFullTag,'_',kernelType,'_',verticalSelection,'Season_',num2str(month,'%02d'),EMOutTag]
 
     load(['./Results/',destFolder,'/anomaly',responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,targetVar,'Deriv_Profile','.mat'], 'predRes');
 
@@ -132,7 +134,7 @@ function computeTotalOHT_ProfileDUACS(responseTag, verticalSelection, targetPres
 
     if isAdjusted
         % Fetch pre-adjusted mean Anomaly: meanPredGrid
-        srcFolder = ['anomaly_','int',responseTag,adjustNumTag,[],windowTypeTag,'_w',windowSizeFullTag,'_',kernelType,'_',verticalSelection,'Season_',num2str(month,'%02d'),EMOutTag];
+        srcFolder = ['anomaly_','int',responseTag,adjustPrevNumTag,[],windowTypeTag,'_w',windowSizeFullTag,'_',kernelType,'_',verticalSelection,'Season_',num2str(month,'%02d'),EMOutTag];
         load(['./Results/',srcFolder,'/MeanAnomaly',responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,targetVar,'Deriv','.mat'], 'meanPredGrid');
     else
         meanPredGrid = zeros(size(latGrid));

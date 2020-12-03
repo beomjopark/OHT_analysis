@@ -1,5 +1,5 @@
 function estimateMeanField_EM(kernelType, month, meanTag, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs,...
-                           is2step, fluxType, eqBorder, isAdjusted, isAbsolute, iterEM)
+                           is2step, fluxType, eqBorder, isAdjusted, isAbsolute, nAdjust, iterEM)
 %% Estimate MeanField with local regression.
 %% Choice of function set by meanTag
   if isempty(eqBorder)
@@ -501,14 +501,14 @@ function estimateMeanField_EM(kernelType, month, meanTag, typeTag, responseTag, 
 
   if is2step
       if isnumeric(verticalSelection)
-        saveName = ['./Results/meanField',typeTag,fluxType,responseTag,meanTag,tag,presString,dataYear,adjustTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),'_Eq',num2str(eqBorder),EMTag,'.mat'];
+        saveName = ['./Results/meanField',typeTag,fluxType,responseTag,meanTag,tag,presString,dataYear,adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),'_Eq',num2str(eqBorder),EMTag,'.mat'];
       else
-        saveName = ['./Results/meanField',typeTag,fluxType,responseTag,meanTag,tag,verticalSelection,dataYear,adjustTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),'_Eq',num2str(eqBorder),EMTag,'.mat'];
+        saveName = ['./Results/meanField',typeTag,fluxType,responseTag,meanTag,tag,verticalSelection,dataYear,adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),'_Eq',num2str(eqBorder),EMTag,'.mat'];
       end
       save(saveName,...
             'betaGrid','latGrid','longGrid','midJulDay', 'fluxType');
   else
-      save(['./Results/meanField',responseTag,meanTag,tag,verticalSelection,dataYear,adjustTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),EMTag,'.mat'],...
+      save(['./Results/meanField',responseTag,meanTag,tag,verticalSelection,dataYear,adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),EMTag,'.mat'],...
           'betaGrid','latGrid','longGrid','midJulDay');
   end
 

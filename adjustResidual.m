@@ -1,4 +1,4 @@
-function adjustResidual(month, kernelType, meanTag, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, isPlot, isStandardize, fluxType, eqBorder, nAdjust)
+function adjustResidual(month, kernelType, meanTag, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, isPlot, isStandardize, fluxType, eqBorder, nAdjust, iterEM, isFullMonth)
   %% Subtract MeanField from the observation
   if nargin < 10
     isStandardize = false;
@@ -7,13 +7,6 @@ function adjustResidual(month, kernelType, meanTag, typeTag, responseTag, vertic
       stdRes = 1;
   else
       fprintf("Standardized!")
-  end
-
-  adjustNumTag = ['Adjusted', num2str(nAdjust+1)]; % Increase adjustment counter
-  if nAdjust == 0
-    adjustPrevNumTag = [];
-  else
-    adjustPrevNumTag = ['Adjusted', num2str(nAdjust)];
   end
 
   switch numel(windowSize)
@@ -37,6 +30,13 @@ function adjustResidual(month, kernelType, meanTag, typeTag, responseTag, vertic
       windowSizeTag = [num2str(windowSizeMean),'_',num2str(windowSizeCov)]
   end
   windowSizeFullTag = [windowSizeTag, '_', num2str(windowSizeKrig)]
+
+  adjustNumTag = ['Adjusted', num2str(nAdjust+1)]; % Increase adjustment counter
+  if nAdjust == 0
+    adjustPrevNumTag = [];
+  else
+    adjustPrevNumTag = ['Adjusted', num2str(nAdjust)];
+  end
 
   if isempty(windowType)
     windowType = 'box'; % expected 'spherical'
@@ -71,31 +71,16 @@ function adjustResidual(month, kernelType, meanTag, typeTag, responseTag, vertic
   if isFullMonth && ~isempty(prevEMTag)
     prevEMTag = ['Full', prevEMTag]
   end
+
+  EMOutTag = EMTag;
   
   tag = 'PchipPotTemp';
   YFtag = [];%'_YF3NN'
-
   if is2step
     % load(['./Data/',typeTag,fluxType,responseTag,'Prof',tag,verticalSelection,dataYear,'Filtered_',num2str(minNumberOfObs),'_w',num2str(windowSize),'.mat']);
-    load(['./Results/meanField',typeTag,fluxType,responseTag,meanTag,tag,verticalSelection,dataYear,adjustTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),'_Eq',num2str(eqBorder),EMTag,'.mat'], 'latGrid', 'longGrid');
+    load(['./Results/meanField',typeTag,fluxType,responseTag,meanTag,tag,verticalSelection,dataYear,adjustTag,[],windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),'_Eq',num2str(eqBorder),EMTag,'.mat'], 'latGrid', 'longGrid');
   else
-    switch responseTag
-        case 'Temp'
-            switch verticalSelection
-                case 'MidMeso'
-                    load(['./Data/',typeTag,responseTag,'Prof600','Filtered_',num2str(minNumberOfObs),'.mat']);
-                    load(['./Results/meanField',responseTag,meanTag,'target600','_',num2str(windowSize),'_',num2str(minNumberOfObs),'.mat']);
-                case 'FullMeso'
-                    load(['./Data/',typeTag,responseTag,'Prof200','Filtered_',num2str(minNumberOfObs),'.mat']);
-                    load(['./Results/meanField',responseTag,meanTag,'target200','_',num2str(windowSize),'_',num2str(minNumberOfObs),'.mat']);
-            end
-        case 'Dens'
-%            load(['./Data/',typeTag,'TempDens','Prof',tag,verticalSelection,dataYear,'Filtered_',num2str(minNumberOfObs),'_w',num2str(windowSize),'.mat']);
-            load(['./Results/meanField',responseTag,meanTag,tag,verticalSelection,dataYear,adjustTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),EMTag,'.mat'], 'latGrid', 'longGrid');
-        case 'Sal'
-            load(['./Data/',typeTag,'Prof',tag,verticalSelection,'Filtered_',num2str(minNumberOfObs),'.mat']);
-            load(['./Results/meanField',responseTag,meanTag,tag,verticalSelection,'_',num2str(windowSize),'_',num2str(minNumberOfObs),'.mat']);
-    end
+    load(['./Results/meanField',responseTag,meanTag,tag,verticalSelection,dataYear,adjustPrevNumTag,[],windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),EMTag,'.mat'], 'latGrid', 'longGrid');
   end
   
   if is2step
@@ -104,27 +89,29 @@ function adjustResidual(month, kernelType, meanTag, typeTag, responseTag, vertic
     % Recover back into original scale
     switch typeTag
       case 'lat'
-          latFluxRes = latFluxRes .* stdRes;
+          Res = latFluxRes .* stdRes;
       case 'lon'
-          lonFluxRes = lonFluxRes .* stdRes;
+          Res = lonFluxRes .* stdRes;
       otherwise
-          intFluxRes = intFluxRes .* stdRes;
+          Res = intFluxRes .* stdRes;
     end
 
     % Load meanPredGrid
     srcFolder = ['anomaly_',typeTag,fluxType,responseTag,adjustPrevNumTag,windowTypeTag,'_w',num2str(windowSize),'_Eq',num2str(eqBorder),'_',kernelType,'_',verticalSelection,'Season_',num2str(month,'%02d')];
     load(['./Results/',srcFolder,'/MeanAnomaly',typeTag,fluxType,responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,'.mat']);
   else
+    load(['./Data/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustPrevNumTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,EMTag,'.mat']);
     switch responseTag
         case 'Temp'
-            load(['./Data/',typeTag,responseTag,'Res',verticalSelection,dataYear,'Filtered_',num2str(minNumberOfObs),'.mat']);
-            targetTempRes = targetTempRes .* stdRes;
+            Res = targetTempRes .* stdRes;
+        case 'ESA'
+            Res = targetSSTRes .* stdRes;
         case 'Dens'
-            load(['./Data/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustPrevNumTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,EMTag,'.mat']);
-            intDensRes = intDensRes .* stdRes;
+            Res = intDensRes .* stdRes;
+        case 'DUACS'
+            Res = targetADTRes .* stdRes;
         case 'Sal'
-            load(['./Data/',typeTag,responseTag,'Res',verticalSelection,dataYear,'Filtered_',num2str(minNumberOfObs),'.mat']);   
-            targetSalRes = targetSalRes .* stdRes;
+            Res = targetSalRes .* stdRes;
     end
 
     % Load meanPredGrid
@@ -146,78 +133,71 @@ function adjustResidual(month, kernelType, meanTag, typeTag, responseTag, vertic
       profLat = profLatAggrSelRounded(iProf);
       profLong = profLongAggrSelRounded(iProf);
 
-      iLat = find(latGrid(1,:) == profLat);
-      iLong = find(longGrid(:,1) == profLong);
-%meanProf(iProf) = meanPredGrid(iLong,iLat);
-      if is2step
-        switch typeTag
-          case 'lat'
-            latFluxRes(iProf) = latFluxRes(iProf) - meanPredGrid(iLong,iLat);
-          case 'lon'
-            lonFluxRes(iProf) = lonFluxRes(iProf) - meanPredGrid(iLong,iLat);
-          otherwise
-            intFluxRes(iProf) = intFluxRes(iProf) - meanPredGrid(iLong,iLat);
-        end
-      else
-        switch responseTag
-            case 'Temp'
-              targetTempRes(iProf) = targetTempRes(iProf) - meanPredGrid(iLong,iLat);
-            case 'Dens'
-              intDensRes(iProf) = intDensRes(iProf) - meanPredGrid(iLong,iLat);
-            case 'Sal'
-              targetSalRes(iProf) = targetSalRes(iProf) - meanPredGrid(iLong,iLat);
-        end
-      end
+      iLat = find(abs(latGrid(1,:) - profLat) < 1e-03);
+      iLong = find(abs(longGrid(:,1) - profLong) < 1e-03);
+      Res(iProf) = Res(iProf) - meanPredGrid(iLong, iLat);
   end
 
   % Save Data
+  if isStandardize
+    stdRes = std(Res, 'omitnan');
+  end
+
   if is2step
+    saveName = ['./Data/',typeTag, fluxType,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeFullTag,EMTag,'_Eq',num2str(eqBorder),'.mat']
     switch typeTag
       case 'lat'
           if isStandardize
-            stdRes = std(latFluxRes, 'omitnan');
-            latFluxRes = latFluxRes ./ stdRes;
+            latFluxRes = Res ./ stdRes;
           end
-          save(['./Data/',typeTag, fluxType,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,EMTag,'_Eq',num2str(eqBorder),'.mat'],...
+          save(saveName,...
       'profLatAggrSel','profLongAggrSel','profJulDayAggrSel','latFluxRes', 'stdRes');
       case 'lon'
           if isStandardize
-            stdRes = std(lonFluxRes, 'omitnan');
-            lonFluxRes = lonFluxRes ./ stdRes;
+            lonFluxRes = Res ./ stdRes;
           end
-          save(['./Data/',typeTag, fluxType,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,EMTag,'_Eq',num2str(eqBorder),'.mat'],...
+          save(saveName,...
       'profLatAggrSel','profLongAggrSel','profJulDayAggrSel','lonFluxRes', 'stdRes');
       otherwise
           if isStandardize
-            stdRes = std(intFluxRes, 'omitnan');
-            intFluxRes = intFluxRes ./ stdRes;
+            intFluxRes = Res ./ stdRes;
           end
-          save(['./Data/',typeTag, fluxType,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,EMTag,'_Eq',num2str(eqBorder),'.mat'],...
+          save(saveName,...
       'profLatAggrSel','profLongAggrSel','profJulDayAggrSel','intFluxRes', 'stdRes');
     end
   else
+    saveName = ['./Data/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeFullTag,EMTag,'.mat']
     switch responseTag
         case 'Temp'
             if isStandardize
-              stdRes = std(targetTempRes, 'omitnan');
-              targetTempRes = targetTempRes ./ stdRes;
+              targetTempRes = Res ./ stdRes;
             end
-            save(['./Data/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,'Filtered_',num2str(minNumberOfObs),'.mat'],...
+            save(saveName,...
         'profLatAggrSel','profLongAggrSel','profJulDayAggrSel','targetTempRes', 'stdRes');
         case 'Dens'
             if isStandardize
-              stdRes = std(intDensRes, 'omitnan');
-              intDensRes = intDensRes ./ stdRes;
+              intDensRes = Res ./ stdRes;
             end
-            save(['./Data/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,EMTag,'.mat'],...
-        'profLatAggrSel','profLongAggrSel','profYearAggrSel','profJulDayAggrSel','intDensRes', 'stdRes');
+            save(saveName,...
+        'profLatAggrSel','profLongAggrSel','profJulDayAggrSel','intDensRes', 'stdRes');
+        case 'ESA'
+            if isStandardize
+              targetSSTRes = Res ./ stdRes;
+            end
+            save(saveName,...
+        'profLatAggrSel','profLongAggrSel','profJulDayAggrSel','targetSSTRes', 'stdRes');            
+        case 'DUACS'
+            if isStandardize
+              targetADTRes = Res ./ stdRes;
+            end
+            save(saveName,...
+        'profLatAggrSel','profLongAggrSel','profJulDayAggrSel','targetADTRes', 'stdRes');
         case 'Sal'
             if isStandardize
-              stdRes = std(targetSalRes, 'omitnan');
-              targetSalRes = targetSalRes ./ stdRes;
+              targetSalRes = Res ./ stdRes;
             end
-            save(['./Data/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,'Filtered_',num2str(minNumberOfObs),'.mat'],...
-        'profLatAggrSel','profLongAggrSel','profJulDayAggrSel','targetSalRes', 'stdRes');          
+            save(saveName,...
+        'profLatAggrSel','profLongAggrSel','profJulDayAggrSel','targetSalRes', 'stdRes');
     end
   end
   if isPlot

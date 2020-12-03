@@ -1,4 +1,4 @@
-function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, isPlot, isStandardize, fluxType, eqBorder, isAdjusted, isAbsolute, iterEM, isFullMonth)
+function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, isPlot, isStandardize, fluxType, eqBorder, isAdjusted, isAbsolute, nAdjust, iterEM, isFullMonth)
   %% Subtract MeanField from the observation
   if nargin < 10
     isStandardize = false;
@@ -88,21 +88,21 @@ function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, da
 
   if is2step
     load(['./Data/',typeTag,fluxType,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
-    load(['./Results/meanField',typeTag,fluxType,responseTag,meanTag,tag,verticalSelection,dataYear,adjustTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),'_Eq',num2str(eqBorder),EMTag,'.mat']);
+    load(['./Results/meanField',typeTag,fluxType,responseTag,meanTag,tag,verticalSelection,dataYear,adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),'_Eq',num2str(eqBorder),EMTag,'.mat']);
   else
     switch responseTag
         case {'Temp', 'Dens'}
             load(['./Data/',typeTag,'TempDens','Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
-            load(['./Results/','meanField',responseTag,meanTag,tag,verticalSelection,dataYear,adjustTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),YFtag,EMTag,'.mat']);
-%            load(['./Data/','pre_thresh/',typeTag,'TempDens','Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSize),'.mat']);
-%            load(['./Results/','prethresh/','meanField',responseTag,meanTag,tag,verticalSelection,dataYear,adjustTag,absoluteTag,windowTypeTag,'_w',num2str(windowSize),'_',num2str(minNumberOfObs),YFtag,'.mat']);
+            load(['./Results/','meanField',responseTag,meanTag,tag,verticalSelection,dataYear,adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),YFtag,EMTag,'.mat']);
+%            load(['./Data/','pre_thresh/',typeTag,'TempDens','Prof',tag,verticalSelection,dataYear,adjustNumTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSize),'.mat']);
+%            load(['./Results/','prethresh/','meanField',responseTag,meanTag,tag,verticalSelection,dataYear,adjustNumTag,absoluteTag,windowTypeTag,'_w',num2str(windowSize),'_',num2str(minNumberOfObs),YFtag,'.mat']);
 
             if exist('is_thresh_filter', 'var')
                 disp('The Profiles are thresholded.')
             end
         case {'DUACS', 'ESA'}
             load(['./Data/',typeTag,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
-            load(['./Results/','meanField',responseTag,meanTag,tag,verticalSelection,dataYear,adjustTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),EMTag,'.mat']);
+            load(['./Results/','meanField',responseTag,meanTag,tag,verticalSelection,dataYear,adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),EMTag,'.mat']);
         case 'Sal'
             load(['./Data/',typeTag,'Prof',tag,verticalSelection,'Filtered_',num2str(minNumberOfObs),'.mat']);
             load(['./Results/meanField',responseTag,meanTag,tag,verticalSelection,'_',windowSizeTag,'_',num2str(minNumberOfObs),'.mat']);
