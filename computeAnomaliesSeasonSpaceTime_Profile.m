@@ -215,6 +215,9 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
 %            responseRes3Months = S.FluxRes3Months;
     end
 
+    symPDopts.POSDEF = true;
+    symPDopts.SYM = true;
+
     for iYear = startYear:endYear
         for iMonth = 1:12
             fprintf("%d / %d\n", iYear, iMonth);
@@ -331,8 +334,9 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
                         thetasOpt_cur,thetaLatOpt_cur,thetaLongOpt_cur,thetatOpt_cur);            
                 end
                 
+                covObs = covObs + sigmaOpt_cur.^2 * eye(nRes);
                 try
-                    predResTemp(iProf) = covGridObs * ((covObs + sigmaOpt_cur.^2 * eye(nRes)) \ responseResSel);
+                    predResTemp(iProf) = covGridObs * linsolve(covObs, responseResSel, symPDopts);
                     if isDeriv
                         switch targetVar
                             case 'lat'
@@ -340,9 +344,9 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
                             otherwise
                                 thetaScale2 = thetaLongOpt_cur.^2;
                         end
-                        predVarResTemp(iProf) = 3 * thetasOpt_cur ./ thetaScale2  - covGridObs*((covObs + sigmaOpt_cur^2*eye(nRes))\(covGridObs'));
+                        predVarResTemp(iProf) = 3 * thetasOpt_cur ./ thetaScale2  - covGridObs*linsolve(covObs, covGridObs', symPDopts);
                     else
-                        predVarResTemp(iProf) = thetasOpt_cur + sigmaOpt_cur^2 - covGridObs*((covObs + sigmaOpt_cur^2*eye(nRes))\(covGridObs'));
+                        predVarResTemp(iProf) = thetasOpt_cur + sigmaOpt_cur^2 - covGridObs*linsolve(covObs, covGridObs', symPDopts);
                     end
                 catch
                     predResTemp(iProf) = NaN;

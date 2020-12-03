@@ -197,6 +197,8 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
 %            responseRes3Months = S.FluxRes3Months;
     end    
 
+    symPDopts.POSDEF = true;
+    symPDopts.SYM = true;
 
     for iYear = startYear:endYear
         for iMonth = 1:12
@@ -309,10 +311,12 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
                     covGridObs = feval(['spaceTimeCovariance',kernelType],...
                         predLat, predLong, midJulDay,...
                         profLatAggrSel,profLongAggrSel,profJulDayAggrSel,...
-                        thetasOpt_cur,thetaLatOpt_cur,thetaLongOpt_cur,thetatOpt_cur);            
+                        thetasOpt_cur,thetaLatOpt_cur,thetaLongOpt_cur,thetatOpt_cur);
                 end
                 
-                predGrid(iGrid) = covGridObs * ((covObs + sigmaOpt_cur.^2 * eye(nRes)) \ responseResSel);
+                covObs(1:nRes+1:end) = covObs(1:nRes+1:end) + sigmaOpt_cur.^2;
+                predGrid(iGrid) = covGridObs * linsolve(covObs, responseResSel, symPDopts);
+%                predGrid(iGrid) = covGridObs * ((covObs + sigmaOpt_cur.^2 * eye(nRes)) \ responseResSel);
                 
                 % Outlier clearance
 %                if abs(predGrid(iGrid)) > 10
@@ -339,9 +343,10 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
                     else % lon
                       thetaScale2 = thetaLongOpt_cur.^2;
                     end
-                    predVarianceGrid(iGrid) = 3 * thetasOpt_cur ./ thetaScale2  - covGridObs*((covObs + sigmaOpt_cur^2*eye(nRes))\(covGridObs'));
+                    predVarianceGrid(iGrid) = 3 * thetasOpt_cur ./ thetaScale2  - covGridObs*linsolve(covObs, covGridObs', symPDopts);
                 else
-                    predVarianceGrid(iGrid) = thetasOpt_cur + sigmaOpt_cur^2 - covGridObs*((covObs + sigmaOpt_cur^2*eye(nRes))\(covGridObs'));
+%                    predVarianceGrid(iGrid) = thetasOpt_cur + sigmaOpt_cur^2 - covGridObs*((covObs + sigmaOpt_cur^2*eye(nRes))\(covGridObs'));
+                    predVarianceGrid(iGrid) = thetasOpt_cur + sigmaOpt_cur.^2 - covGridObs*linsolve(covObs, covGridObs', symPDopts);
                 end
             end
             toc;
