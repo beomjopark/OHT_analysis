@@ -1,6 +1,13 @@
 function computeTotalOHT_ProfileDUACS(responseTag, verticalSelection, targetPres, intStart, dataYear, windowType, windowSize, minNumberOfObs, meanTag, kernelType, month, targetVar, isPlot, isAdjusted, isAbsolute, nAdjust, iterEM)
 %% Compute the in-situ OHT used for is2step
 
+    isStencil = true
+    if isStencil
+        stencilTag = 'FD'
+    else
+        stencilTag = []
+    end
+
     refPres = 900
 
     switch numel(windowSize)
@@ -135,7 +142,12 @@ function computeTotalOHT_ProfileDUACS(responseTag, verticalSelection, targetPres
     if isAdjusted
         % Fetch pre-adjusted mean Anomaly: meanPredGrid
         srcFolder = ['anomaly_','int',responseTag,adjustPrevNumTag,[],windowTypeTag,'_w',windowSizeFullTag,'_',kernelType,'_',verticalSelection,'Season_',num2str(month,'%02d'),EMOutTag];
-        load(['./Results/',srcFolder,'/MeanAnomaly',responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,targetVar,'Deriv','.mat'], 'meanPredGrid');
+
+        if isStencil
+            load(['./Results/',srcFolder,'/MeanAnomaly',responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,'.mat'], 'meanPredGrid');
+        else
+            load(['./Results/',srcFolder,'/MeanAnomaly',responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,targetVar,'Deriv','.mat'], 'meanPredGrid');
+        end
     else
         meanPredGrid = zeros(size(latGrid));
     end
@@ -145,6 +157,77 @@ function computeTotalOHT_ProfileDUACS(responseTag, verticalSelection, targetPres
         predRes = - predRes;
         meanPredGrid = - meanPredGrid;
     end
+
+
+    % Finitie Difference - 9 point
+    if isStencil
+        switch targetVar
+        case 'lat'
+            betaConst = - squeeze(betaGrid(:, :, 1)) + meanPredGrid;
+
+            stencil = -3 .* betaConst(:, [5:end, 1:4]) ...
+                +32 .* betaConst(:, [4:end, 1:3]) ...
+                -168 .* betaConst(:, [3:end, 1:2]) ...
+                +672 .* betaConst(:, [2:end, 1]) ...
+                -672 .* betaConst(:, [end, 1:(end-1)]) ...
+                +168 .* betaConst(:, [(end-1):end, 1:(end-2)]) ...
+                -32 .* betaConst(:, [(end-2):end, 1:(end-3)]) ...
+                +3 .* betaConst(:, [(end-3):end, 1:(end-4)]);
+            stencil = stencil ./ 840;
+
+            RStencil = (25 .* betaConst...
+             - 48 .* betaConst(:, [end, 1:(end-1)])...
+             + 36 .* betaConst(:, [(end-1):end, 1:(end-2)])...
+             - 16 .* betaConst(:, [(end-2):end, 1:(end-3)])...
+             + 3 .* betaConst(:, [(end-3):end, 1:(end-4)])...
+             ) ./ 12;
+            LStencil = (-25 .* betaConst...
+             + 48 .* betaConst(:, [2:end, 1])...
+             - 36 .* betaConst(:, [3:end, 1:2])...
+             + 16 .* betaConst(:, [4:end, 1:3])...
+             - 3 .* betaConst(:, [5:end, 1:4])...
+             ) ./ 12;
+
+            nanPos = isnan(stencil);
+            stencil(nanPos) = RStencil(nanPos);
+            nanPos = isnan(stencil);
+            stencil(nanPos) = LStencil(nanPos);
+
+            stencil = - stencil ./ (latGrid(:, [2:end, 1]) - latGrid);
+        case 'lon'
+            betaConst = squeeze(betaGrid(:, :, 1)) + meanPredGrid;
+
+            stencil = -3 .* betaConst([5:end, 1:4], :) ...
+                +32 .* betaConst([4:end, 1:3], :) ...
+                -168 .* betaConst([3:end, 1:2], :) ...
+                +672 .* betaConst([2:end, 1], :) ...
+                -672 .* betaConst([end, 1:(end-1)], :) ...
+                +168 .* betaConst([(end-1):end, 1:(end-2)], :) ...
+                -32 .* betaConst([(end-2):end, 1:(end-3)], :) ...
+                +3 .* betaConst([(end-3):end, 1:(end-4)], :);
+            stencil = stencil ./ 840;
+
+            RStencil = (25 .* betaConst...
+             - 48 .* betaConst([end, 1:(end-1)], :)...
+             + 36 .* betaConst([(end-1):end, 1:(end-2)], :)...
+             - 16 .* betaConst([(end-2):end, 1:(end-3)], :)...
+             + 3 .* betaConst([(end-3):end, 1:(end-4)], :)...
+             ) ./ 12;
+            LStencil = (-25 .* betaConst...
+             + 48 .* betaConst([2:end, 1], :)...
+             - 36 .* betaConst([3:end, 1:2], :)...
+             + 16 .* betaConst([4:end, 1:3], :)...
+             - 3 .* betaConst([5:end, 1:4], :)...
+             ) ./ 12;
+
+            nanPos = isnan(stencil);
+            stencil(nanPos) = RStencil(nanPos);
+            nanPos = isnan(stencil);
+            stencil(nanPos) = LStencil(nanPos);
+
+            stencil = stencil ./ (longGrid([2:end,1],:) - longGrid);
+    end
+
     
     if isAbsolute
         load(['../Misc/AGVA/','meanZonVelRef',num2str(refPres),'.mat'], 'meanRefZonVel');
@@ -188,19 +271,24 @@ function computeTotalOHT_ProfileDUACS(responseTag, verticalSelection, targetPres
     %    iGrid = sub2ind(sizeGrid, find(longLinspace == predLong), find(latLinspace == predLat));
         
         % Predict meanField from the nearest grid
-        switch targetVar
-            case 'lat'
-                betaDeriv = betaGrid(iLong,iLat,iLatCoef) +...
-                            (profLongAggrSel(iProf) - predLong) .* betaGrid(iLong,iLat,iLatLongCoef) + ...
-                            2 .* (profLatAggrSel(iProf) - predLat) .* betaGrid(iLong,iLat,iLat2Coef);
-                betaDeriv = - betaDeriv; % Zonal sign change
-            case 'lon'
-                betaDeriv = betaGrid(iLong,iLat,iLongCoef) +...
-                            (profLatAggrSel(iProf) - predLat) .* betaGrid(iLong,iLat,iLatLongCoef) + ...
-                            2 .* (profLongAggrSel(iProf) - predLong) .* betaGrid(iLong,iLat,iLong2Coef);
-        end
-        if isAdjusted
-            betaDeriv = betaDeriv + meanPredGrid(iLong, iLat);
+        if ~ isStencil
+            switch targetVar
+                case 'lat'
+                    betaDeriv = betaGrid(iLong,iLat,iLatCoef) +...
+                                (profLongAggrSel(iProf) - predLong) .* betaGrid(iLong,iLat,iLatLongCoef) + ...
+                                2 .* (profLatAggrSel(iProf) - predLat) .* betaGrid(iLong,iLat,iLat2Coef);
+                    betaDeriv = - betaDeriv; % Zonal sign change
+                case 'lon'
+                    betaDeriv = betaGrid(iLong,iLat,iLongCoef) +...
+                                (profLatAggrSel(iProf) - predLat) .* betaGrid(iLong,iLat,iLatLongCoef) + ...
+                                2 .* (profLongAggrSel(iProf) - predLong) .* betaGrid(iLong,iLat,iLong2Coef);
+            end
+            if isAdjusted
+                betaDeriv = betaDeriv + meanPredGrid(iLong, iLat);
+            end
+        else
+            % Nearest point approximation
+            betaDeriv = stencil(iLong,iLat);
         end
         
         profDerivSel(iProf) = (betaDeriv + predRes(iProf)) .* distGrid(iLong, iLat);
@@ -253,7 +341,7 @@ function computeTotalOHT_ProfileDUACS(responseTag, verticalSelection, targetPres
 %            profMassFluxAggrInt = profVelAggr; % Mass flux will be integrated from DerivSel
 
 
-    saveName = ['./Data/','ESA',targetVar,'FluxProf',verticalSelection,dataYear,adjustTag,absoluteTag,'.mat'];
+    saveName = ['./Data/','ESA',stencilTag,targetVar,'FluxProf',verticalSelection,dataYear,adjustTag,absoluteTag,'.mat'];
     if isAbsolute
         save(saveName,...
         'profLatAggrSel','profLongAggrSel','profJulDayAggrSel',...
