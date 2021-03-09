@@ -1,4 +1,4 @@
-function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, isPlot, isStandardize, fluxType, eqBorder, isAdjusted, isAbsolute, iterEM, isFullMonth)
+function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, isPlot, isStandardize, fluxType, eqBorder, isAdjusted, isAbsolute, nAdjust, iterEM, isFullMonth)
   %% Subtract MeanField from the observation
   if nargin < 10
     isStandardize = false;
@@ -58,6 +58,7 @@ function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, da
       windowSizeTag = windowSizeFullTag;
   else
       adjustTag = [];
+      adjustNumTag = [];
   end
 
   if isAbsolute
@@ -88,27 +89,21 @@ function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, da
 
   if is2step
     load(['./Data/',typeTag,fluxType,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
-    load(['./Results/meanField',typeTag,fluxType,responseTag,meanTag,tag,verticalSelection,dataYear,adjustTag,absoluteTag,windowTypeTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),'_Eq',num2str(eqBorder),EMTag,'.mat']);
+    load(['./Results/meanField',typeTag,fluxType,responseTag,meanTag,tag,verticalSelection,dataYear,adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),'_Eq',num2str(eqBorder),EMTag,'.mat']);
   else
     switch responseTag
-        case 'Temp'
-            switch verticalSelection
-                case 'MidMeso'
-                    load(['./Data/',typeTag,responseTag,'Prof600','Filtered_',num2str(minNumberOfObs),'.mat']);
-                    load(['./Results/meanField',responseTag,meanTag,'target600','_',num2str(windowSize),'_',num2str(minNumberOfObs),'.mat']);
-                case 'FullMeso'
-                    load(['./Data/',typeTag,responseTag,'Prof200','Filtered_',num2str(minNumberOfObs),'.mat']);
-                    load(['./Results/meanField',responseTag,meanTag,'target200','_',num2str(windowSize),'_',num2str(minNumberOfObs),'.mat']);
-            end
-        case 'Dens'
+        case {'Temp', 'Dens'}
             load(['./Data/',typeTag,'TempDens','Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
-            load(['./Results/','meanField',responseTag,meanTag,tag,verticalSelection,dataYear,adjustTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),YFtag,EMTag,'.mat']);
-%            load(['./Data/','pre_thresh/',typeTag,'TempDens','Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSize),'.mat']);
-%            load(['./Results/','prethresh/','meanField',responseTag,meanTag,tag,verticalSelection,dataYear,adjustTag,absoluteTag,windowTypeTag,'_w',num2str(windowSize),'_',num2str(minNumberOfObs),YFtag,'.mat']);
+            load(['./Results/','meanField',responseTag,meanTag,tag,verticalSelection,dataYear,adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),YFtag,EMTag,'.mat']);
+%            load(['./Data/','pre_thresh/',typeTag,'TempDens','Prof',tag,verticalSelection,dataYear,adjustNumTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSize),'.mat']);
+%            load(['./Results/','prethresh/','meanField',responseTag,meanTag,tag,verticalSelection,dataYear,adjustNumTag,absoluteTag,windowTypeTag,'_w',num2str(windowSize),'_',num2str(minNumberOfObs),YFtag,'.mat']);
 
             if exist('is_thresh_filter', 'var')
                 disp('The Profiles are thresholded.')
             end
+        case {'DUACS', 'ESA'}
+            load(['./Data/',typeTag,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
+            load(['./Results/','meanField',responseTag,meanTag,tag,verticalSelection,dataYear,adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),EMTag,'.mat']);
         case 'Sal'
             load(['./Data/',typeTag,'Prof',tag,verticalSelection,'Filtered_',num2str(minNumberOfObs),'.mat']);
             load(['./Results/meanField',responseTag,meanTag,tag,verticalSelection,'_',windowSizeTag,'_',num2str(minNumberOfObs),'.mat']);
@@ -131,19 +126,21 @@ function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, da
 %  profRes = zeros(1, nProf);
   if is2step
     switch typeTag
-      case 'lat'
-        profResponse = profLatFluxAggrSel;
-      case 'lon'
-        profResponse = profLonFluxAggrSel;
-      otherwise
+      case {'intlat', 'intlon'}
         profResponse = intFluxProf;
+      otherwise
+        profResponse = profFluxAggrSel;
     end
   else
     switch responseTag
         case 'Temp'
-          profResponse = targetTempProfPchip;
+          profResponse = intTempProf;
         case 'Dens'
           profResponse = targetDynhProf;
+        case 'DUACS'
+          profResponse = targetADTProf;
+        case 'ESA'
+          profResponse = targetSSTProf;          
         case 'Sal'
           profResponse = targetSalProfPchip;
     end
@@ -253,23 +250,7 @@ function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, da
 
   if is2step
     switch typeTag
-      case 'lat'
-          latFluxRes = profRes(~isNanRes);
-          if isStandardize
-            stdRes = std(latFluxRes, 'omitnan');
-            latFluxRes = latFluxRes ./ stdRes;
-          end
-          save(['./Data/',typeTag, fluxType,responseTag,'Res',verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'_Eq',num2str(eqBorder),EMTag,'.mat'],...
-      'profLatAggrSel','profLongAggrSel','profJulDayAggrSel','latFluxRes', 'stdRes', 'isNanRes');
-      case 'lon'
-          lonFluxRes = profRes(~isNanRes);
-          if isStandardize
-            stdRes = std(lonFluxRes, 'omitnan');
-            lonFluxRes = lonFluxRes ./ stdRes;
-          end
-          save(['./Data/',typeTag, fluxType,responseTag,'Res',verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'_Eq',num2str(eqBorder),EMTag,'.mat'],...
-      'profLatAggrSel','profLongAggrSel','profJulDayAggrSel','lonFluxRes', 'stdRes', 'isNanRes');
-      otherwise
+      case {'intlat', 'intlon'}
           intFluxRes = profRes(~isNanRes);
           if isStandardize
             stdRes = std(intFluxRes, 'omitnan');
@@ -277,6 +258,14 @@ function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, da
           end
           save(['./Data/',typeTag, fluxType,responseTag,'Res',verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'_Eq',num2str(eqBorder),EMTag,'.mat'],...
       'profLatAggrSel','profLongAggrSel','profJulDayAggrSel','intFluxRes', 'stdRes', 'isNanRes');
+      otherwise
+          FluxRes = profRes(~isNanRes);
+          if isStandardize
+            stdRes = std(FluxRes, 'omitnan');
+            FluxRes = FluxRes ./ stdRes;
+          end
+          save(['./Data/',typeTag, fluxType,responseTag,'Res',verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'_Eq',num2str(eqBorder),EMTag,'.mat'],...
+      'profLatAggrSel','profLongAggrSel','profJulDayAggrSel','FluxRes', 'stdRes', 'isNanRes');
     end
   else
     switch responseTag
@@ -286,7 +275,7 @@ function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, da
               stdRes = std(targetTempRes, 'omitnan');
               targetTempRes = targetTempRes ./ stdRes;
             end
-            save(['./Data/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),EMTag,'.mat'],...
+            save(['./Data/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,EMTag,'.mat'],...
         'profLatAggrSel','profLongAggrSel','profJulDayAggrSel','targetTempRes', 'stdRes', 'isNanRes');
         case 'Dens'
             intDensRes = profRes(~isNanRes);          
@@ -295,7 +284,23 @@ function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, da
               intDensRes = intDensRes ./ stdRes;
             end
             save(['./Data/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,EMTag,'.mat'],...
-        'profLatAggrSel','profLongAggrSel','profYearAggrSel','profJulDayAggrSel','profFloatIDAggrSel','intDensRes', 'stdRes', 'isNanRes');
+        'profLatAggrSel','profLongAggrSel','profJulDayAggrSel','profFloatIDAggrSel','intDensRes', 'stdRes', 'isNanRes');
+        case 'DUACS'
+            targetADTRes = profRes(~isNanRes);          
+            if isStandardize
+              stdRes = std(targetADTRes, 'omitnan');
+              targetADTRes = targetADTRes ./ stdRes;
+            end
+            save(['./Data/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,EMTag,'.mat'],...
+        'profLatAggrSel','profLongAggrSel','profJulDayAggrSel','targetADTRes', 'stdRes', 'isNanRes');
+        case 'ESA'
+            targetSSTRes = profRes(~isNanRes);          
+            if isStandardize
+              stdRes = std(targetSSTRes, 'omitnan');
+              targetSSTRes = targetSSTRes ./ stdRes;
+            end
+            save(['./Data/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,EMTag,'.mat'],...
+        'profLatAggrSel','profLongAggrSel','profJulDayAggrSel','targetSSTRes', 'stdRes', 'isNanRes');
         case 'Sal'
             targetSalRes = profRes(~isNanRes);          
             if isStandardize

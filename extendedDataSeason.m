@@ -39,16 +39,14 @@ function extendedDataSeason(meanTag, typeTag, responseTag, verticalSelection, da
                     switch responseTag
                         case 'Flux'
                             switch typeTag
-                                case 'lat'
-                                    S1.latFluxResMonth = [];
-                                case 'lon'
-                                    S1.lonFluxResMonth = [];
-                                otherwise
+                                case {'intlat', 'intlon'}
                                     S1.intFluxResMonth = [];
+                                otherwise
+                                    S1.FluxResMonth = [];
                             end
                         case 'Temp'
                             S1.targetTempResMonth = [];
-                        case 'Dens'
+                        case {'Dens', 'DUACS', 'ESA'}
                             S1.intDensResMonth = [];
                         case 'Sal'
                             S1.targetSalResMonth = [];
@@ -75,16 +73,14 @@ function extendedDataSeason(meanTag, typeTag, responseTag, verticalSelection, da
                     switch responseTag
                         case 'Flux'
                             switch typeTag
-                                case 'lat'
-                                    S3.latFluxResMonth = [];
-                                case 'lon'
-                                    S3.lonFluxResMonth = [];
-                                otherwise
+                                case {'intlat', 'intlon'}
                                     S3.intFluxResMonth = [];
-                            end
+                                otherwise
+                                    S3.FluxResMonth = [];
+                            end                            
                         case 'Temp'
                             S3.targetTempResMonth = [];
-                        case 'Dens'
+                        case {'Dens', 'DUACS', 'ESA'}
                             S3.intDensResMonth = [];
                         case 'Sal'
                             S3.targetSalResMonth = [];
@@ -111,30 +107,21 @@ function extendedDataSeason(meanTag, typeTag, responseTag, verticalSelection, da
             switch responseTag
                 case 'Flux'
                     switch typeTag
-                        case 'lat'
-                            latFluxRes3Months = [S1.latFluxResMonth S2.latFluxResMonth S3.latFluxResMonth];
-                            save(['./Data/Extended/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'_extended.mat'],...
-                                'latFluxRes3Months','profLatAggr3Months','profLongAggr3Months','profJulDayAggr3Months');
-                        case 'lon'
-                            lonFluxRes3Months = [S1.lonFluxResMonth S2.lonFluxResMonth S3.lonFluxResMonth];
-                            save(['./Data/Extended/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'_extended.mat'],...
-                                'lonFluxRes3Months','profLatAggr3Months','profLongAggr3Months','profJulDayAggr3Months');
-                        otherwise
+                        case {'intlat', 'intlon'}
                             intFluxRes3Months = [S1.intFluxResMonth S2.intFluxResMonth S3.intFluxResMonth];
                             save(['./Data/Extended/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'_extended.mat'],...
                                 'intFluxRes3Months','profLatAggr3Months','profLongAggr3Months','profJulDayAggr3Months');                            
+                        otherwise
+                            FluxRes3Months = [S1.FluxResMonth S2.FluxResMonth S3.FluxResMonth];
+                            save(['./Data/Extended/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'_extended.mat'],...
+                                'FluxRes3Months','profLatAggr3Months','profLongAggr3Months','profJulDayAggr3Months');
                     end
                 case 'Temp'
                     targetTempRes3Months = [S1.targetTempResMonth S2.targetTempResMonth S3.targetTempResMonth];
                     save(['./Data/Extended/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'_extended.mat'],...
                         'targetTempRes3Months','profLatAggr3Months','profLongAggr3Months','profJulDayAggr3Months');
-                case 'Dens'
+                case {'Dens', 'Sal', 'DUACS', 'ESA'}
                     intDensRes3Months = [S1.intDensResMonth S2.intDensResMonth S3.intDensResMonth];
-                    save(['./Data/Extended/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'_extended.mat'],...
-                        'intDensRes3Months','profLatAggr3Months','profLongAggr3Months','profJulDayAggr3Months');
-                case 'Sal'
-                    % For convenience
-                    intDensRes3Months = [S1.targetSalResMonth S2.targetSalResMonth S3.targetSalResMonth];
                     save(['./Data/Extended/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'_extended.mat'],...
                         'intDensRes3Months','profLatAggr3Months','profLongAggr3Months','profJulDayAggr3Months');
             end

@@ -83,12 +83,12 @@ function localMLESpaceTimeSeason_Reestimate(kernelType, month, typeTag, response
     nYear = endYear - startYear + 1;
 
     if is2step
-        S = load(['./Results/localMLESpaceTime',kernelType,typeTag, fluxType,responseTag,verticalSelection,'Season_',num2str(month,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_Eq',num2str(eqBorder),EMTag,'.mat'],...
-            'latGrid','longGrid','thetasOpt','thetaLatOpt','thetaLongOpt','thetatOpt','sigmaOpt','nll','nResGrid','exitFlags','isFminError','nYear');
+        saveName = ['./Results/localMLESpaceTime',kernelType,typeTag, fluxType,responseTag,verticalSelection,'Season_',num2str(month,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_Eq',num2str(eqBorder),EMTag,'.mat']
     else
-        S = load(['./Results/localMLESpaceTime',kernelType,responseTag,verticalSelection,'Season_',num2str(month,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,EMTag,'.mat'],...
-            'latGrid','longGrid','thetasOpt','thetaLatOpt','thetaLongOpt','thetatOpt','sigmaOpt','nll','nResGrid','exitFlags','isFminError','nYear');
+        saveName = ['./Results/localMLESpaceTime',kernelType,responseTag,verticalSelection,'Season_',num2str(month,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,EMTag,'.mat']
     end
+    S = load(saveName, ...
+            'latGrid','longGrid','thetasOpt','thetaLatOpt','thetaLongOpt','thetatOpt','sigmaOpt','nll','nResGrid','exitFlags','isFminError','nYear')
     
     latGrid = S.latGrid;
     longGrid = S.longGrid;
@@ -106,8 +106,14 @@ function localMLESpaceTimeSeason_Reestimate(kernelType, month, typeTag, response
 
     % Load Data mask
     if is2step
-      load(['./Data/dataMask',typeTag,responseTag,verticalSelection,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
-%        load(['./Data/dataMask','target','Temp',verticalSelection,dataYear,'_',num2str(minNumberOfObs),'.mat']);
+        if isnumeric(verticalSelection) % intlat/intlon
+            targetPres = verticalSelection;
+            presString = [num2str(min(targetPres)),'_',num2str(max(targetPres))];
+            load(['./Data/dataMask',typeTag,responseTag,presString,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
+        else
+            % For each target Pressure
+            load(['./Data/dataMask',typeTag,responseTag,verticalSelection,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
+        end
     else
 %{
         dat = load(['./Data/',typeTag,'TempDens','Prof','PchipPotTemp',verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
@@ -217,13 +223,15 @@ function localMLESpaceTimeSeason_Reestimate(kernelType, month, typeTag, response
             profJulDay3Months = S.profJulDayAggr3Months;
             switch typeTag
                 case 'int'
-                    responseRes3Months = S.intDensRes3Months;
-                case 'lat'
-                    responseRes3Months = S.latFluxRes3Months;
-                case 'lon'
-                    responseRes3Months = S.lonFluxRes3Months;
-                otherwise %intlat intlon
+                    if strcmp(responseTag, 'Temp')
+                        responseRes3Months = S.targetTempRes3Months;
+                    else
+                        responseRes3Months = S.intDensRes3Months;
+                    end
+                case {'intlat', 'intlon'}
                     responseRes3Months = S.intFluxRes3Months;
+                otherwise
+                    responseRes3Months = S.FluxRes3Months;
             end
 
             idx = find(profLat3Months > latMin & profLat3Months < latMax & profLong3Months > longMin & profLong3Months < longMax);
@@ -270,14 +278,16 @@ function localMLESpaceTimeSeason_Reestimate(kernelType, month, typeTag, response
             logSigmaInit =  log(10);
         else
             if is2step
+                logThetasInit = log(10^2);
+                logSigmaInit =  log(10);
+%{
                 switch fluxType
                 case 'mass'
                     logThetasInit = log(10^2);
                     logSigmaInit =  log(10);
                 case 'vol'
-                    logThetasInit = log(10^2);
-                    logSigmaInit =  log(10);
                 end
+%}
             else
                 switch responseTag
                     case 'Dens'
@@ -356,11 +366,11 @@ function localMLESpaceTimeSeason_Reestimate(kernelType, month, typeTag, response
     end
 
     if is2step
-        save(['./Results/localMLESpaceTime',kernelType,typeTag, fluxType,responseTag,verticalSelection,'Season_',num2str(month,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_Eq',num2str(eqBorder),EMTag,'.mat'],...
-            'latGrid','longGrid','thetasOpt','thetaLatOpt','thetaLongOpt','thetatOpt','sigmaOpt','nll','nResGrid','exitFlags','isFminError','nYear');
+        saveName = ['./Results/localMLESpaceTime',kernelType,typeTag, fluxType,responseTag,verticalSelection,'Season_',num2str(month,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_Eq',num2str(eqBorder),EMTag,'.mat']
     else
-        save(['./Results/localMLESpaceTime',kernelType,responseTag,verticalSelection,'Season_',num2str(month,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,EMTag,'.mat'],...
-            'latGrid','longGrid','thetasOpt','thetaLatOpt','thetaLongOpt','thetatOpt','sigmaOpt','nll','nResGrid','exitFlags','isFminError','nYear');
+        saveName = ['./Results/localMLESpaceTime',kernelType,responseTag,verticalSelection,'Season_',num2str(month,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,EMTag,'.mat']
     end
+    save(saveName,...
+        'latGrid','longGrid','thetasOpt','thetaLatOpt','thetaLongOpt','thetatOpt','sigmaOpt','nll','nResGrid','exitFlags','isFminError','nYear');
 
 end

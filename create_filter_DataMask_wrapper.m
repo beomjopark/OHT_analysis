@@ -26,10 +26,12 @@ intStartList = [1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1850, 1900
 isMid = (min(intStartList) > refPres)
 
 %% QC by distance: BEFORE EVERYTHING ELSE
-if isMid
-    filterUsingDist(typeTag, responseTag, [1000, 1900]);
-else
-    filterUsingDist(typeTag, responseTag, [5, 800]);
+if ~is2step
+    if isMid
+        filterUsingDist(typeTag, responseTag, [1000, 1900]);
+    else
+        filterUsingDist(typeTag, responseTag, [5, 800]);
+    end
 end
 
 %% Data Mask and Filter
@@ -77,15 +79,15 @@ else
 %}
 
         otherwise % lat lon
-            poolobj = parpool(nCore, 'IdleTimeout', 1200);
-            parfor intStartIdx = 1:numel(intStartList)
+%            poolobj = parpool(nCore, 'IdleTimeout', 1200);
+            for intStartIdx = 1:numel(intStartList)
                 intStart = intStartList(intStartIdx); % Parfor requires increasing 1 index
                 verticalSelection = strcat('Relative', num2str(intStart)); 
 
                 fprintf('Target pressure: %d\n', intStart);
-                createDataMask(typeTag, responseTag, verticalSelection, dataYear, windowSize, minNumberOfObs, isAdjusted, isAbsolute);
-                filterUsingMasks(typeTag, responseTag, verticalSelection, dataYear, windowSize, minNumberOfObs, false, fluxType, isAdjusted, isAbsolute);
+                createDataMask(typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, isAdjusted, isAbsolute);
+                filterUsingMasks(typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, false, fluxType, isAdjusted, isAbsolute);
             end
-            delete(poolobj)
+ %           delete(poolobj)
     end        
 end

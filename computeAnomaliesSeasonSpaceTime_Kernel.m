@@ -1,4 +1,5 @@
-function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, isStandardize, fluxType, eqBorder, isAdjusted, isAbsolute, nAdjust, iterEM)
+%% Finding the convolutional kernel
+function computeAnomaliesSeasonSpaceTime_Kernel(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, isStandardize, fluxType, eqBorder, isAdjusted, isAbsolute, nAdjust, iterEM)
 
     if nargin < 12 || isempty(isStandardize)
         isStandardize = false;
@@ -37,11 +38,9 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
 
     switch windowType
         case 'spherical'
-          isSpherical = true;
           windowTypeTag = 'spherical'
           windowSizeMargined = windowSizeKrig * 2;
         otherwise
-          isSpherical = false;
           windowTypeTag = []
           windowSizeMargined = windowSizeKrig;
     end
@@ -88,63 +87,52 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
     startYear = str2num(yearRange{2});
     endYear = str2num(yearRange{3});
 
-    switch numel(month)
-      case 12  % Full month provided
-          thetasOpt = cell(numel(month), 1);
-          thetaLatOpt = cell(numel(month), 1);
-          thetaLongOpt = cell(numel(month), 1);
-          thetatOpt = cell(numel(month), 1);
-          sigmaOpt = cell(numel(month), 1);
-          nResGrid = cell(numel(month), 1);
-          if is2step
-            srcName = ['./Results/localMLESpaceTime',kernelType,typeTag, fluxType,responseTag,verticalSelection,'Season_',num2str(1,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_Eq',num2str(eqBorder),EMTag,'.mat']
-          else
-            srcName = ['./Results/localMLESpaceTime',kernelType,responseTag,verticalSelection,'Season_',num2str(1,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,EMTag,'.mat']
-          end
-          fitMLE = load(srcName);       
-          isFminErrorTemp = zeros([numel(month), size(fitMLE.latGrid)]);
+    if is2step
+        fitMLE = load(['./Results/localMLESpaceTime',kernelType,typeTag, fluxType,responseTag,verticalSelection,'Season_',num2str(month,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',num2str(windowSize),'_Eq',num2str(eqBorder),EMTag,'.mat']);
+    else
+        switch numel(month)
+          case 12  % Full month provided
+              thetasOpt = cell(numel(month), 1);
+              thetaLatOpt = cell(numel(month), 1);
+              thetaLongOpt = cell(numel(month), 1);
+              thetatOpt = cell(numel(month), 1);
+              sigmaOpt = cell(numel(month), 1);
+              nResGrid = cell(numel(month), 1);
 
-          for iMonth = month
-              if is2step
-                srcName = ['./Results/localMLESpaceTime',kernelType,typeTag, fluxType,responseTag,verticalSelection,'Season_',num2str(iMonth,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_Eq',num2str(eqBorder),EMTag,'.mat']
-              else
-                srcName = ['./Results/localMLESpaceTime',kernelType,responseTag,verticalSelection,'Season_',num2str(iMonth,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,EMTag,'.mat']
+              fitMLE = load(['./Results/localMLESpaceTime',kernelType,responseTag,verticalSelection,'Season_',num2str(1,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,EMTag,'.mat']);
+              isFminErrorTemp = zeros([numel(month), size(fitMLE.latGrid)]);
+
+              for iMonth = month
+                  fitMLE = load(['./Results/localMLESpaceTime',kernelType,responseTag,verticalSelection,'Season_',num2str(iMonth,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,EMTag,'.mat']);
+                  latGrid = fitMLE.latGrid;
+                  longGrid = fitMLE.longGrid;
+                  thetasOpt{iMonth} = fitMLE.thetasOpt;
+                  thetaLatOpt{iMonth} = fitMLE.thetaLatOpt;
+                  thetaLongOpt{iMonth} = fitMLE.thetaLongOpt;
+                  thetatOpt{iMonth} = fitMLE.thetatOpt;
+                  sigmaOpt{iMonth} = fitMLE.sigmaOpt;
+                  nResGrid{iMonth} = fitMLE.nResGrid;
+                  isFminErrorTemp(iMonth,:,:) = (isnan(thetasOpt{iMonth}) | isnan(thetaLatOpt{iMonth}) | isnan(thetaLongOpt{iMonth}) | isnan(thetatOpt{iMonth}) | isnan(sigmaOpt{iMonth}));
               end
-              fitMLE = load(srcName);             
-
+              isFminError = squeeze(any(isFminErrorTemp, 1));
+              clear isFminErrorTemp
+              clear fitMLE
+          case 1
+              fitMLE = load(['./Results/localMLESpaceTime',kernelType,responseTag,verticalSelection,'Season_',num2str(month,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,EMTag,'.mat']);
               latGrid = fitMLE.latGrid;
               longGrid = fitMLE.longGrid;
-              thetasOpt{iMonth} = fitMLE.thetasOpt;
-              thetaLatOpt{iMonth} = fitMLE.thetaLatOpt;
-              thetaLongOpt{iMonth} = fitMLE.thetaLongOpt;
-              thetatOpt{iMonth} = fitMLE.thetatOpt;
-              sigmaOpt{iMonth} = fitMLE.sigmaOpt;
-              nResGrid{iMonth} = fitMLE.nResGrid;
-              isFminErrorTemp(iMonth,:,:) = (isnan(thetasOpt{iMonth}) | isnan(thetaLatOpt{iMonth}) | isnan(thetaLongOpt{iMonth}) | isnan(thetatOpt{iMonth}) | isnan(sigmaOpt{iMonth}));
-          end
-          isFminError = squeeze(any(isFminErrorTemp, 1));
-          clear isFminErrorTemp
-          clear fitMLE
-      case 1
-          if is2step
-            srcName = ['./Results/localMLESpaceTime',kernelType,typeTag, fluxType,responseTag,verticalSelection,'Season_',num2str(month,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_Eq',num2str(eqBorder),EMTag,'.mat']
-          else
-            srcName = ['./Results/localMLESpaceTime',kernelType,responseTag,verticalSelection,'Season_',num2str(month,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,EMTag,'.mat']
-          end
-          fitMLE = load(srcName);
-          latGrid = fitMLE.latGrid;
-          longGrid = fitMLE.longGrid;
-          thetasOpt = fitMLE.thetasOpt;
-          thetaLatOpt = fitMLE.thetaLatOpt;
-          thetaLongOpt = fitMLE.thetaLongOpt;
-          thetatOpt = fitMLE.thetatOpt;
-          sigmaOpt = fitMLE.sigmaOpt;
-          nResGrid = fitMLE.nResGrid;
+              thetasOpt = fitMLE.thetasOpt;
+              thetaLatOpt = fitMLE.thetaLatOpt;
+              thetaLongOpt = fitMLE.thetaLongOpt;
+              thetatOpt = fitMLE.thetatOpt;
+              sigmaOpt = fitMLE.sigmaOpt;
+              nResGrid = fitMLE.nResGrid;
 %              nll = fitMLE.nll;
-          isFminError = (isnan(thetasOpt) | isnan(thetaLatOpt) | isnan(thetaLongOpt) | isnan(thetatOpt) | isnan(sigmaOpt));
-          clear fitMLE
-      otherwise
-        error('Not implemented');
+              isFminError = (isnan(thetasOpt) | isnan(thetaLatOpt) | isnan(thetaLongOpt) | isnan(thetatOpt) | isnan(sigmaOpt));
+              clear fitMLE
+          otherwise
+            error('Not implemented');
+        end
     end
 
 
@@ -168,7 +156,7 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
     if is2step
         destFolder = ['anomaly_',typeTag,fluxType,responseTag,adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeFullTag,'_Eq',num2str(eqBorder),'_',kernelType,'_',verticalSelection,'Season_',num2str(month,'%02d'),EMOutTag];
     else
-        destFolder = ['anomaly_',typeTag,responseTag,adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeFullTag,'_',kernelType,'_',verticalSelection,'Season_',num2str(month,'%02d'),EMOutTag];
+        destFolder = ['anomaly_',typeTag,responseTag,adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeFullTag,'_',kernelType,'_',verticalSelection,'Season_',num2str(month,'%02d'),EMOutTag,'Kernel'];
     end
     mkdir(['./Results/',destFolder])
 
@@ -176,29 +164,9 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
     if strcmp(windowType, 'spherical')
         % Determine reference distance
         refDist = distance(0, 180, 0+windowSizeKrig, 180,...
-                                referenceEllipsoid('WGS84', 'm'))
+                                referenceEllipsoid('GRS80', 'm'))
     end
 
-    % responseName
-    switch typeTag
-        case 'int'
-          if strcmp(responseTag, 'Temp')
-              responseName = 'targetTempRes3Months';
-%              responseRes3Months = S.targetTempRes3Months;
-          else
-              responseName = 'intDensRes3Months';            
-%              responseRes3Months = S.intDensRes3Months;
-          end
-        case {'intlat', 'intlon'}
-            responseName = 'intFluxRes3Months';
-%            responseRes3Months = S.intFluxRes3Months;
-        otherwise %latlon
-            responseName = 'FluxRes3Months';
-%            responseRes3Months = S.FluxRes3Months;
-    end    
-
-    symPDopts.POSDEF = true;
-    symPDopts.SYM = true;
 
     for iYear = startYear:endYear
         for iMonth = 1:12
@@ -229,22 +197,23 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
 
             midJulDay = datenum(predYear,predMonth,15,12,0,0); % NB: It might be more correct to use 16 insted of 15 here
 
-            predGrid = zeros(size(latGrid));
-            predVarianceGrid = zeros(size(latGrid));
+            % Ficticious Window
+            nInjectDay = 10;
+            latGridFlat = latGrid(:);
+            longGridFlat = longGrid(:);
+
+%            predVarianceGrid = zeros(size(latGrid));
             tic;
-            parfor iGrid = 1:nGrid
-                
+%            parfor iGrid = 1:nGrid
+            for iGrid = int64(linspace(1, nGrid, 100))%1:nGrid
+                predGrid = sparse(size(latGrid,1), size(latGrid,2));
+
                 nResGrid_cur = nResGrid_mon(iGrid);
                 thetasOpt_cur = thetasOpt_mon(iGrid);
                 thetaLatOpt_cur = thetaLatOpt_mon(iGrid);
                 thetaLongOpt_cur = thetaLongOpt_mon(iGrid);
                 thetatOpt_cur = thetatOpt_mon(iGrid);
                 sigmaOpt_cur = sigmaOpt_mon(iGrid);
-
-                if (isnan(thetasOpt_cur) || isnan(thetaLatOpt_cur) || isnan(thetaLongOpt_cur) || isnan(thetatOpt_cur) || isnan(sigmaOpt_cur))
-                  predGrid(iGrid) = NaN;
-                  continue;
-                end
 
                 predLat = latGrid(iGrid);
                 predLong = longGrid(iGrid);
@@ -256,7 +225,7 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
 
                 if isEqBorder
                     if abs(predLat) <= eqBorder
-                        predGrid(iGrid) = NaN;
+%                        predGrid(iGrid) = NaN;
                         continue;
                     end
                     if predLat > 0
@@ -271,20 +240,29 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
                 profLatAggr3Months = S.profLatAggr3Months;
                 profLongAggr3Months = S.profLongAggr3Months;
                 profJulDayAggr3Months = S.profJulDayAggr3Months;
-                responseRes3Months = S.(responseName);
-
+                switch typeTag
+                    case 'int'
+                        responseRes3Months = S.intDensRes3Months;
+                    case 'lat'
+                        responseRes3Months = S.latFluxRes3Months;
+                    case 'lon'
+                        responseRes3Months = S.lonFluxRes3Months;
+                    otherwise %intlatlon
+                        responseRes3Months = S.intFluxRes3Months;
+                end
 
                 idx = find(profLatAggr3Months > latMin & profLatAggr3Months < latMax & profLongAggr3Months > longMin & profLongAggr3Months < longMax);
-                if isSpherical
-                  is_in_circle = distance(predLat, predLong, profLatAggr3Months(idx), profLongAggr3Months(idx),...
-                                    referenceEllipsoid('WGS84', 'm')) < refDist;
-                  idx = idx(is_in_circle);
-                else
-                  idx = find(profLatAggr3Months > latMin & profLatAggr3Months < latMax & profLongAggr3Months > longMin & profLongAggr3Months < longMax);
+                switch windowType
+                    case 'spherical'
+                      is_in_circle = distance(predLat, predLong, profLatAggr3Months(idx), profLongAggr3Months(idx),...
+                                        referenceEllipsoid('GRS80', 'm')) < refDist;
+                      idx = idx(is_in_circle);
+                    case 'box_var'
+                        idx = find(profLatAggr3Months > latMin & profLatAggr3Months < latMax & profLongAggr3Months > longMin & profLongAggr3Months < longMax);
                 end
                 
                 if isempty(idx) || (nResGrid_cur == 0)
-                    predGrid(iGrid) = NaN;
+%                    predGrid(iGrid) = NaN;
                     continue;
                 end
 
@@ -293,14 +271,54 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
                 profJulDayAggrSel = profJulDayAggr3Months(idx);
                 responseResSel = responseRes3Months(idx)';
 
+                %% Add ficticious centerpoint
+                predStartYear = predYear;
+                predEndYear = predYear;
+                predStartMonth = predMonth - 1;
+                predEndMonth = predMonth + 1;
+            
+                if predYear == startYear && predMonth == 1
+                    predStartMonth = predMonth;
+                elseif predYear == endYear && predMonth == 12
+                    predEndMonth = predMonth;
+                elseif predMonth == 1
+                    predStartYear = predYear - 1;
+                    predStartMonth = 12;
+                elseif predMonth == 12
+                    predEndYear = predYear + 1;
+                    predEndMonth = 1;
+                else
+                    % Do nothing
+                end
+                
+                injectDay = linspace(datenum(predStartYear,predStartMonth,1,0,0,0),...
+                    datenum(predEndYear,predEndMonth,eomday(predEndYear,predEndMonth),23,59,0),...
+                    nInjectDay);
+                profLatAggrSel = [profLatAggrSel predLat.*ones(1, nInjectDay)];
+                profLongAggrSel = [profLongAggrSel predLong.*ones(1, nInjectDay)];
+                profJulDayAggrSel = [profJulDayAggrSel injectDay];
+                responseResSel = [zeros(size(responseResSel)); ones(nInjectDay, 1)];
+
                 nRes = length(responseResSel);
+
+
+                %% Indexing for grid
+                gridIdx = find(latGridFlat > latMin & latGridFlat < latMax & longGridFlat > longMin & longGridFlat < longMax);
+                switch windowType
+                    case 'spherical'
+                      is_in_circle = distance(predLat, predLong, latGridFlat(gridIdx), longGridFlat(gridIdx),...
+                                        referenceEllipsoid('GRS80', 'm')) < refDist;
+                      gridIdx = gridIdx(is_in_circle);
+                    case 'box_var'
+                        gridIdx = find(latGridFlat > latMin & latGridFlat < latMax & longGridFlat > longMin & longGridFlat < longMax);
+                end
                 
                 if isDeriv
                     covObs = feval(['spaceTimeCovariance',kernelType,'_vec'],...
                         profLatAggrSel, profLongAggrSel, profJulDayAggrSel,...
                         thetasOpt_cur,thetaLatOpt_cur,thetaLongOpt_cur,thetatOpt_cur);
                     covGridObs = feval(['spaceTimeCovariance',kernelType,'Deriv'],...
-                        predLat, predLong, midJulDay,...
+                        latGridFlat(gridIdx), longGridFlat(gridIdx), midJulDay,...
                         profLatAggrSel,profLongAggrSel,profJulDayAggrSel,...
                         thetasOpt_cur,thetaLatOpt_cur,thetaLongOpt_cur,thetatOpt_cur,...
                         targetVar);
@@ -309,14 +327,32 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
                         profLatAggrSel, profLongAggrSel, profJulDayAggrSel,...
                         thetasOpt_cur,thetaLatOpt_cur,thetaLongOpt_cur,thetatOpt_cur);
                     covGridObs = feval(['spaceTimeCovariance',kernelType],...
-                        predLat, predLong, midJulDay,...
+                        latGridFlat(gridIdx), longGridFlat(gridIdx), midJulDay,...
                         profLatAggrSel,profLongAggrSel,profJulDayAggrSel,...
                         thetasOpt_cur,thetaLatOpt_cur,thetaLongOpt_cur,thetatOpt_cur);
                 end
                 
-                covObs(1:nRes+1:end) = covObs(1:nRes+1:end) + sigmaOpt_cur.^2;
-                predGrid(iGrid) = covGridObs * linsolve(covObs, responseResSel, symPDopts);
-%                predGrid(iGrid) = covGridObs * ((covObs + sigmaOpt_cur.^2 * eye(nRes)) \ responseResSel);
+                predGrid(gridIdx) = covGridObs * ((covObs + sigmaOpt_cur.^2 * eye(nRes)) \ responseResSel);
+
+                if isStandardize
+                    predGrid = predGrid .* stdRes;
+                    %predVarianceGrid = predVarianceGrid .* (stdRes^2);
+                end
+                
+                if isDeriv
+                    parsave(['./Results/',destFolder,'/anomaly',responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,targetVar,'Deriv_',...
+                    num2str(predMonth,'%02d'),'_',num2str(predYear),'_',num2str(iGrid),'.mat'], iGrid, predGrid);
+                else
+                    if is2step
+                        parsave(['./Results/',destFolder,'/anomaly',typeTag,fluxType,responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,'_',...
+                            num2str(predMonth,'%02d'),'_',num2str(predYear),'_',num2str(iGrid),'.mat'], iGrid, predGrid);                    
+                    else
+                        parsave(['./Results/',destFolder,'/anomaly',responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,'_',...
+                                num2str(predMonth,'%02d'),'_',num2str(predYear),'_',num2str(iGrid),'.mat'], iGrid, predGrid);
+                    end
+                end
+
+                
                 
                 % Outlier clearance
 %                if abs(predGrid(iGrid)) > 10
@@ -336,21 +372,23 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
 %                    nResRed = size(covObsRed, 1);
 %                    predGrid(iGrid) = covGridObs([1:4, 6:7, 10:end]) * ((covObsRed + sigmaOpt(iGrid)^2*eye(nResRed)) \ responseResSel([1:4, 6:7, 10:end]));
 %                end
-                
+%{                
                 if isDeriv
-                    if strcmp(targetVar, 'lat')
-                      thetaScale2 = thetaLatOpt_cur.^2;
-                    else % lon
-                      thetaScale2 = thetaLongOpt_cur.^2;
+                    switch targetVar
+                        case 'lat'
+                            thetaScale2 = thetaLatOpt_cur.^2;
+                        otherwise
+                            thetaScale2 = thetaLongOpt_cur.^2;
                     end
-                    predVarianceGrid(iGrid) = 3 * thetasOpt_cur ./ thetaScale2  - covGridObs*linsolve(covObs, covGridObs', symPDopts);
+                    predVarianceGrid(iGrid) = 3 * thetasOpt_cur ./ thetaScale2  - covGridObs*((covObs + sigmaOpt_cur^2*eye(nRes))\(covGridObs'));
                 else
-%                    predVarianceGrid(iGrid) = thetasOpt_cur + sigmaOpt_cur^2 - covGridObs*((covObs + sigmaOpt_cur^2*eye(nRes))\(covGridObs'));
-                    predVarianceGrid(iGrid) = thetasOpt_cur + sigmaOpt_cur.^2 - covGridObs*linsolve(covObs, covGridObs', symPDopts);
+                    predVarianceGrid(iGrid) = thetasOpt_cur + sigmaOpt_cur^2 - covGridObs*((covObs + sigmaOpt_cur^2*eye(nRes))\(covGridObs'));
                 end
+%}
             end
             toc;
-
+            
+            %{
             if isStandardize
                 predGrid = predGrid .* stdRes;
                 predVarianceGrid = predVarianceGrid .* (stdRes^2);
@@ -367,7 +405,7 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
                             num2str(predMonth,'%02d'),'_',num2str(predYear),'.mat'],'predGrid','predVarianceGrid','latGrid','longGrid','midJulDay');
                 end
             end
-
+            %}
         end 
     end
 

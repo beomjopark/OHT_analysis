@@ -30,9 +30,12 @@ if is2step && strcmp(typeTag, 'int') % This case is for intlatflux/intlonflux
     estimateMeanField(meanTag, typeTag, responseTag, intStartList, dataYear, windowType, windowSize, minNumberOfObs, is2step, fluxType, eqBorder, isAdjusted, isAbsolute);
 
     verticalSelection = strcat(num2str(min(intStartList)),'_',num2str(max(intStartList)));
+%{
     subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, false, isStandardize, fluxType, eqBorder, isAdjusted, isAbsolute);
     divideDataToMonthsSeason(meanTag, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, fluxType, eqBorder, isAdjusted, isAbsolute, nAdjust);
     extendedDataSeason(meanTag, typeTag, responseTag, verticalSelection, dataYear, minNumberOfObs, is2step, isAdjusted, isAbsolute, nAdjust);
+%}
+
 else
     %poolobj = parpool(nCore, 'IdleTimeout', 1200);
     for intStartIdx = 1:numel(intStartList)
@@ -58,10 +61,10 @@ else
 %}
 
             % MLE - Splitted
-            localMLESpaceTimeSeason(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, windowType,windowSize, minNumberOfObs, is2step, false, isStandardize, [], [], isAdjusted, isAbsolute, nAdjust, iterEM, isFullMonth);
+            localMLESpaceTimeSeason(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, windowType,windowSize, minNumberOfObs, is2step, false, isStandardize, fluxType, [], isAdjusted, isAbsolute, nAdjust, iterEM, isFullMonth);
 
             % Reoptimize parfor bugs
-            localMLESpaceTimeSeason_Reestimate(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, false, isStandardize, [], [], isAdjusted, isAbsolute, nAdjust, iterEM, isFullMonth);
+            localMLESpaceTimeSeason_Reestimate(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, false, isStandardize, fluxType, [], isAdjusted, isAbsolute, nAdjust, iterEM, isFullMonth);
 %        end
         delete(poolobj);
     end

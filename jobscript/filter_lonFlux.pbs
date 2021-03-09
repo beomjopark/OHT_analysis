@@ -1,0 +1,33 @@
+#!/bin/bash
+### Job Name
+#PBS -N FilterlonFlux
+### Project code
+#PBS -A UMEL0001
+#PBS -l walltime=12:00:00
+#PBS -q economy
+### Merge output and error files
+#PBS -j oe
+### Write stdout and stderr on runtime
+#PBS -k oe
+### Select 1 node with 36 CPUs
+#PBS -l select=1:ncpus=36
+### Send email on abort, begin and end
+#PBS -m abe
+### Specify mail recipient
+#PBS -M beomjop@andrew.cmu.edu
+
+##$ Load Matlab
+module load matlab/R2019a
+
+### Use bash
+export SHELL=/bin/bash
+
+matCMD="dataYear = '_2007_2018', Params_LatFlux_Step2, "
+matCMD+="typeTag = 'lon', "
+matCMD+="fluxType = 'heat', "
+matCMD+="intStartList = [10], "
+matCMD+="refPres = 900, "
+matCMD+="create_filter_DataMask_wrapper, exit"
+
+### Run the executable
+matlab -nodisplay -nosplash -r "${matCMD}"
