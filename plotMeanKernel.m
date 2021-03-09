@@ -1,3 +1,8 @@
+load(['./Data/dataMask',verticalSelection,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);       
+ maskJohn = ncread('./RG_climatology/RG_ArgoClim_Temperature_2016.nc','BATHYMETRY_MASK',[1 1 25],[Inf Inf 1]);
+  maskJohn(maskJohn == 0) = 1;
+  maskJohn = [NaN*ones(360,25) maskJohn NaN*ones(360,25)];
+  mask = maskJohn .* dataMask;
 
 nHar = 6;
    iLat = 1 + (2*nHar) + 1;
@@ -152,5 +157,5 @@ nHar = 6;
       otherwise
           betaType = num2str(ii-1)
   end
-  print('-depsc2',['./Figures/',destFolder,'/','betaKernel',betaType,'_',responseTag,meanTag,tag,verticalSelection,'_',num2str(windowSize),'.eps']);
+  print('-depsc2',['./Figures/',destFolder,'/','beta',betaType,'_',responseTag,meanTag,tag,verticalSelection,'_',num2str(windowSize),'.eps']);
  end

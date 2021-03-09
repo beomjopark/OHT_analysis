@@ -58,6 +58,7 @@ function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, da
       windowSizeTag = windowSizeFullTag;
   else
       adjustTag = [];
+      adjustNumTag = [];
   end
 
   if isAbsolute
