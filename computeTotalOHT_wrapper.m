@@ -22,6 +22,7 @@ targetVar = 'lat' % 'lon'
 %}
 isAdjusted = true
 isAbsolute = true
+iterEM = 3
 
 isPlot = false
 %% Run Selection
@@ -40,7 +41,7 @@ for intStartIdx = 1:numel(intStartList)
         continue;
     end
     computeTotalOHT_Profile(responseTag, verticalSelection, intStartList, intStart, dataYear, windowType, windowSize, minNumberOfObs, meanTag, kernelType, month, targetVar, isPlot, isAdjusted, isAbsolute, nAdjust, iterEM)
-    computeTotalOHT_ProfileDUACS(responseTag, verticalSelection, intStartList, intStart, dataYear, windowType, windowSize, minNumberOfObs, meanTag, kernelType, month, targetVar, isPlot, isAdjusted, isAbsolute, nAdjust, iterEM)    
+%    computeTotalOHT_ProfileDUACS(responseTag, verticalSelection, intStartList, intStart, dataYear, windowType, windowSize, minNumberOfObs, meanTag, kernelType, month, targetVar, isPlot, isAdjusted, isAbsolute, nAdjust, iterEM)
     close all;
 end
 
@@ -48,3 +49,8 @@ end
 %poolobj = parpool(36, 'IdleTimeout', 1200);
 integrateOHT_Profile(intStartList, dataYear, minNumberOfObs, targetVar, isPlot, isAdjusted, isAbsolute);
 %delete(poolobj);
+
+%% For ENSO
+integrateOHT_Profile([10, 15, 20, 30, 50, 75, 100], dataYear, minNumberOfObs, targetVar, isPlot, isAdjusted, isAbsolute);
+integrateOHT_Profile([100, 125, 150, 200, 250, 300], dataYear, minNumberOfObs, targetVar, isPlot, isAdjusted, isAbsolute);
+integrateOHT_Profile([300, 400, 500, 600, 700, 800], dataYear, minNumberOfObs, targetVar, isPlot, isAdjusted, isAbsolute);
