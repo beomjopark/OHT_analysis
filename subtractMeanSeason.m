@@ -89,10 +89,7 @@ function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, da
 
   if is2step
     dataName = ['./Data/',typeTag,fluxType,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'.mat']
-    load(dataName);
-
     srcName = ['./Results/meanField',typeTag,fluxType,responseTag,meanTag,tag,verticalSelection,dataYear,adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),'_Eq',num2str(eqBorder),EMTag,'.mat']
-    load(srcName);
   else
     switch responseTag
         case {'Temp', 'Dens'}
