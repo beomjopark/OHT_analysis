@@ -40,12 +40,15 @@ if is2step && strcmp(typeTag, 'int') % This case is for intlatflux/intlonflux
         intStartList = [refPres, intStartList]
     else
 %        intStartList = [10, 15, 20, 30, 50, 75, 100, 125, 150, 200, 250, 300, 400, 500, 600, 700, 800] % Full upper ocean from 10 with reflv
-        intStartList = [intStartList, refPres]
+        if intStartList(1) == 10 && intStartList(end) == 800
+            intStartList = [intStartList, refPres]
+        end
     end
     fprintf('Target pressure: %d to %d\n', min(intStartList), max(intStartList));
     typeTag = strcat(typeTag, targetVar); %'intlat / intlon'
     createDataMask(typeTag, responseTag, intStartList, dataYear, windowSize, minNumberOfObs, isAdjusted, isAbsolute);
-    filterUsingMasks(typeTag, responseTag, intStartList, dataYear, windowSize, minNumberOfObs, false, fluxType, isAdjusted, isAbsolute);
+%    filterUsingMasks(typeTag, responseTag, intStartList, dataYear, windowSize, minNumberOfObs, false, fluxType, isAdjusted, isAbsolute);
+    filterUsingMasks_Distrib(typeTag, responseTag, intStartList, dataYear, windowType, windowSize, minNumberOfObs, false, fluxType, isAdjusted, isAbsolute)    
 else
     switch typeTag
         case 'target'
@@ -86,7 +89,7 @@ else
 
                 fprintf('Target pressure: %d\n', intStart);
                 createDataMask(typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, isAdjusted, isAbsolute);
-                filterUsingMasks(typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, false, fluxType, isAdjusted, isAbsolute);
+                filterUsingMasks_Distrib(typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, false, fluxType, isAdjusted, isAbsolute);
             end
  %           delete(poolobj)
     end        
