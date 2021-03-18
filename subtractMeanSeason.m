@@ -88,13 +88,16 @@ function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, da
   YFtag = []%'_YF3NN'
 
   if is2step
-    load(['./Data/',typeTag,fluxType,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
-    load(['./Results/meanField',typeTag,fluxType,responseTag,meanTag,tag,verticalSelection,dataYear,adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),'_Eq',num2str(eqBorder),EMTag,'.mat']);
+    dataName = ['./Data/',typeTag,fluxType,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'.mat']
+    load(dataName);
+
+    srcName = ['./Results/meanField',typeTag,fluxType,responseTag,meanTag,tag,verticalSelection,dataYear,adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),'_Eq',num2str(eqBorder),EMTag,'.mat']
+    load(srcName);
   else
     switch responseTag
         case {'Temp', 'Dens'}
-            load(['./Data/',typeTag,'TempDens','Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
-            load(['./Results/','meanField',responseTag,meanTag,tag,verticalSelection,dataYear,adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),YFtag,EMTag,'.mat']);
+          dataName = ['./Data/',typeTag,'TempDens','Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']
+          srcName = ['./Results/','meanField',responseTag,meanTag,tag,verticalSelection,dataYear,adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),YFtag,EMTag,'.mat']
 %            load(['./Data/','pre_thresh/',typeTag,'TempDens','Prof',tag,verticalSelection,dataYear,adjustNumTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSize),'.mat']);
 %            load(['./Results/','prethresh/','meanField',responseTag,meanTag,tag,verticalSelection,dataYear,adjustNumTag,absoluteTag,windowTypeTag,'_w',num2str(windowSize),'_',num2str(minNumberOfObs),YFtag,'.mat']);
 
@@ -102,14 +105,15 @@ function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, da
                 disp('The Profiles are thresholded.')
             end
         case {'DUACS', 'ESA'}
-            load(['./Data/',typeTag,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
-            load(['./Results/','meanField',responseTag,meanTag,tag,verticalSelection,dataYear,adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),EMTag,'.mat']);
+            dataName = ['./Data/',typeTag,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']
+            srcName = ['./Results/','meanField',responseTag,meanTag,tag,verticalSelection,dataYear,adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_',num2str(minNumberOfObs),EMTag,'.mat']
         case 'Sal'
-            load(['./Data/',typeTag,'Prof',tag,verticalSelection,'Filtered_',num2str(minNumberOfObs),'.mat']);
-            load(['./Results/meanField',responseTag,meanTag,tag,verticalSelection,'_',windowSizeTag,'_',num2str(minNumberOfObs),'.mat']);
+            dataName = ['./Data/',typeTag,'Prof',tag,verticalSelection,'Filtered_',num2str(minNumberOfObs),'.mat']
+            srcName = ['./Results/meanField',responseTag,meanTag,tag,verticalSelection,'_',windowSizeTag,'_',num2str(minNumberOfObs),'.mat']
     end
   end
-  
+  load(dataName);
+  load(srcName);
   % Forgot to change the sign
 %{
   if strcmp(fluxType, 'vol') && strcmp(typeTag, 'lat')

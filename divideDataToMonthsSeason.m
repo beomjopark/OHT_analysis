@@ -78,13 +78,14 @@ function divideDataToMonthsSeason(meanTag, typeTag, responseTag, verticalSelecti
     end
 
     if is2step
-        load(['./Data/',typeTag, fluxType,responseTag,'Res',verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'_Eq',num2str(eqBorder),EMTag,'.mat']);
+        srcName = ['./Data/',typeTag, fluxType,responseTag,'Res',verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'_Eq',num2str(eqBorder),EMTag,'.mat']
 %        load(['./Data/',typeTag, fluxType,responseTag,'Res',verticalSelection,dataYear,'Filtered_',num2str(minNumberOfObs),'_w',windowSizeTag,'_Eq',num2str(eqBorder),AdjustTag,EMTag,'.mat']);
     else
         %% Absolute is not applicable and for backward-compatibility
-        load(['./Data/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,EMTag,'.mat']);
+        srcName = ['./Data/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,EMTag,'.mat']
 %        load(['./Data/',typeTag,responseTag,'Res',verticalSelection,dataYear,'Filtered_',num2str(minNumberOfObs),'_w',windowSizeTag,AdjustTag,'.mat']);
     end
+    load(srcName);
 
     nProf = length(profLatAggrSel);
     profYearAggrSel = zeros(1,nProf);
@@ -105,15 +106,17 @@ function divideDataToMonthsSeason(meanTag, typeTag, responseTag, verticalSelecti
             profLatAggrMonth = profLatAggrSel(idx);
             profLongAggrMonth = profLongAggrSel(idx);
             profJulDayAggrMonth = profJulDayAggrSel(idx);
+
+            saveName = ['./Data/Monthly/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'.mat'];
             if is2step
                 switch typeTag
                     case {'intlat', 'intlon'}
                         intFluxResMonth = intFluxRes(idx);
-                        save(['./Data/Monthly/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'.mat'],...
+                        save(saveName,...
                       'profLatAggrMonth','profLongAggrMonth','profJulDayAggrMonth','intFluxResMonth');
                     otherwise
                         FluxResMonth = FluxRes(idx);
-                        save(['./Data/Monthly/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'.mat'],...
+                        save(saveName,...
                       'profLatAggrMonth','profLongAggrMonth','profJulDayAggrMonth','FluxResMonth');
                 end
             else        
@@ -121,23 +124,23 @@ function divideDataToMonthsSeason(meanTag, typeTag, responseTag, verticalSelecti
                 switch responseTag
                     case 'Temp'
                         targetTempResMonth = targetTempRes(idx);
-                        save(['./Data/Monthly/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'.mat'],...
+                        save(saveName,...
                             'profLatAggrMonth','profLongAggrMonth','profJulDayAggrMonth','targetTempResMonth');
                     case 'Dens'
                         intDensResMonth = intDensRes(idx);
-                        save(['./Data/Monthly/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'.mat'],...
+                        save(saveName,...
                             'profLatAggrMonth','profLongAggrMonth','profJulDayAggrMonth','intDensResMonth');
                     case 'DUACS'
                         intDensResMonth = targetADTRes(idx); % NAMING CONVENTION
-                        save(['./Data/Monthly/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'.mat'],...
+                        save(saveName,...
                             'profLatAggrMonth','profLongAggrMonth','profJulDayAggrMonth','intDensResMonth');
                     case 'ESA'
                         intDensResMonth = targetSSTRes(idx); % NAMING CONVENTION
-                        save(['./Data/Monthly/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'.mat'],...
+                        save(saveName,...
                             'profLatAggrMonth','profLongAggrMonth','profJulDayAggrMonth','intDensResMonth');                        
                     case 'Sal'
                         targetSalResMonth = targetSalRes(idx);
-                        save(['./Data/Monthly/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'.mat'],...
+                        save(saveName,...
                             'profLatAggrMonth','profLongAggrMonth','profJulDayAggrMonth','targetSalResMonth');
                 end
             end

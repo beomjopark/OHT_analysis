@@ -104,25 +104,26 @@ function extendedDataSeason(meanTag, typeTag, responseTag, verticalSelection, da
             
             fprintf("%d observations at %d/%d \n", numel(profLatAggr3Months), iYear, iMonth);
 
+            saveName = ['./Data/Extended/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'_extended.mat'];
             switch responseTag
                 case 'Flux'
                     switch typeTag
                         case {'intlat', 'intlon'}
                             intFluxRes3Months = [S1.intFluxResMonth S2.intFluxResMonth S3.intFluxResMonth];
-                            save(['./Data/Extended/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'_extended.mat'],...
+                            save(saveName,...
                                 'intFluxRes3Months','profLatAggr3Months','profLongAggr3Months','profJulDayAggr3Months');                            
                         otherwise
                             FluxRes3Months = [S1.FluxResMonth S2.FluxResMonth S3.FluxResMonth];
-                            save(['./Data/Extended/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'_extended.mat'],...
+                            save(saveName,...
                                 'FluxRes3Months','profLatAggr3Months','profLongAggr3Months','profJulDayAggr3Months');
                     end
                 case 'Temp'
                     targetTempRes3Months = [S1.targetTempResMonth S2.targetTempResMonth S3.targetTempResMonth];
-                    save(['./Data/Extended/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'_extended.mat'],...
+                    save(saveName,...
                         'targetTempRes3Months','profLatAggr3Months','profLongAggr3Months','profJulDayAggr3Months');
                 case {'Dens', 'Sal', 'DUACS', 'ESA'}
                     intDensRes3Months = [S1.intDensResMonth S2.intDensResMonth S3.intDensResMonth];
-                    save(['./Data/Extended/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'SeasonMonth_',num2str(iMonth,'%02d'),'_',num2str(iYear),'_extended.mat'],...
+                    save(saveName,...
                         'intDensRes3Months','profLatAggr3Months','profLongAggr3Months','profJulDayAggr3Months');
             end
             
