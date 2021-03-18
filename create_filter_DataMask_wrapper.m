@@ -46,7 +46,7 @@ if is2step && strcmp(typeTag, 'int') % This case is for intlatflux/intlonflux
     end
     fprintf('Target pressure: %d to %d\n', min(intStartList), max(intStartList));
     typeTag = strcat(typeTag, targetVar); %'intlat / intlon'
-    createDataMask(typeTag, responseTag, intStartList, dataYear, windowSize, minNumberOfObs, isAdjusted, isAbsolute);
+    createDataMask(typeTag, responseTag, intStartList, dataYear, windowType, windowSize, minNumberOfObs, isAdjusted, isAbsolute);
 %    filterUsingMasks(typeTag, responseTag, intStartList, dataYear, windowSize, minNumberOfObs, false, fluxType, isAdjusted, isAbsolute);
     filterUsingMasks_Distrib(typeTag, responseTag, intStartList, dataYear, windowType, windowSize, minNumberOfObs, false, fluxType, isAdjusted, isAbsolute)    
 else

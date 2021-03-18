@@ -53,4 +53,4 @@ integrateOHT_Profile(intStartList, dataYear, minNumberOfObs, targetVar, isPlot, 
 %% For ENSO
 integrateOHT_Profile([10, 15, 20, 30, 50, 75, 100], dataYear, minNumberOfObs, targetVar, isPlot, isAdjusted, isAbsolute);
 integrateOHT_Profile([100, 125, 150, 200, 250, 300], dataYear, minNumberOfObs, targetVar, isPlot, isAdjusted, isAbsolute);
-integrateOHT_Profile([300, 400, 500, 600, 700, 900], dataYear, minNumberOfObs, targetVar, isPlot, isAdjusted, isAbsolute);
+integrateOHT_Profile([300, 400, 500, 600, 700, 800, 900], dataYear, minNumberOfObs, targetVar, isPlot, isAdjusted, isAbsolute);
