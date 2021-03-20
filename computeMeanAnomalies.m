@@ -90,6 +90,7 @@ function computeMeanAnomalies(kernelType, month, typeTag, responseTag, verticalS
         targetLabel = [];
     end
 
+%{
     vs = strsplit(verticalSelection, '_');
     isIntFlux = (numel(vs) == 2); %intlat/intlon has intStart_intEnd
     if isIntFlux
@@ -99,48 +100,32 @@ function computeMeanAnomalies(kernelType, month, typeTag, responseTag, verticalS
     else % Relative'intStart'
       intStart = str2double(verticalSelection(9:end));
     end
-    % Legacy support
-    switch verticalSelection
-        case 'MidMeso'
-            intStart = 600;
-        case 'FullMeso'
-            intStart = 200;
-    end
+%}
 
-    %tag = 'TrendSeason_t2_SpaceExp';
-    %tag = 'TrendSeasonSpaceTimeExp';
-    %tag = 'TrendSeasonSpaceExp';
     tag = 'PchipPotTemp';
 
     % Load Data mask
     if is2step
-        if isIntFlux % intlat/intlon
+        if isnumeric(verticalSelection) % intlat/intlon
             targetPres = verticalSelection;
             presString = [num2str(min(targetPres)),'_',num2str(max(targetPres))];
-            data = load(['./Data/',typeTag,fluxType,responseTag,'Prof',tag,presString,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
-            load(['./Data/dataMask',typeTag,responseTag,presString,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
+            maskName = ['./Data/dataMask',typeTag,responseTag,presString,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'.mat']
         else
             % For each target Pressure
-            data = load(['./Data/',typeTag,fluxType,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
-            load(['./Data/dataMask',typeTag,responseTag,verticalSelection,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
-%            intEnd = data.intEnd;
-            clear data;            
+            maskName = ['./Data/dataMask',typeTag,responseTag,verticalSelection,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'.mat']
         end
     else
-        % Data here is used to grab intEnd
-        if ~strcmp(responseTag, 'DUACS') || ~strcmp(responseTag, 'DUCASESA') 
-            data = load(['./Data/',typeTag,'TempDens','Prof','PchipPotTemp',verticalSelection,dataYear,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
-%            intEnd = data.intEnd;
-            clear data;
-        end
 %{
-        if numel(data.intStart) > 1
-            load(['./Data/dataMask','Relative',num2str(min(data.intStart)),'_',num2str(max(data.intStart)),dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),'_w',num2str(windowSize),'.mat']);    
+        if numel(intStart) > 1
+            load(['./Data/dataMask','Relative',num2str(min(intStart)),'_',num2str(max(intStart)),dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);    
         else
 %}
-        load(['./Data/dataMask',verticalSelection,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);    
+        maskName = ['./Data/dataMask',verticalSelection,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'.mat']
 %        end
+%        clear dat;
     end
+    load(maskName);
+
     maskJohn = ncread('./RG_climatology/RG_ArgoClim_Temperature_2016.nc','BATHYMETRY_MASK',[1 1 25],[Inf Inf 1]);
     maskJohn(maskJohn == 0) = 1;
     maskJohn = [NaN*ones(360,25) maskJohn NaN*ones(360,25)];
@@ -225,14 +210,15 @@ function computeMeanAnomalies(kernelType, month, typeTag, responseTag, verticalS
     meanPredGrid = meanPredGrid ./ ((endYear - startYear +1).*12 - nNaN);
 
     if isDeriv
-        save(['./Results/',srcFolder,'/MeanAnomaly',responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,targetVar,'Deriv','.mat'], 'meanPredGrid');
+        saveName = ['./Results/',srcFolder,'/MeanAnomaly',responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,targetVar,'Deriv','.mat']
     else
         if is2step
-            save(['./Results/',srcFolder,'/MeanAnomaly',typeTag,fluxType,responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,'.mat'], 'meanPredGrid');
+            saveName = ['./Results/',srcFolder,'/MeanAnomaly',typeTag,fluxType,responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,'.mat']
         else
-            save(['./Results/',srcFolder,'/MeanAnomaly',responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,'.mat'], 'meanPredGrid');    
+            saveName = ['./Results/',srcFolder,'/MeanAnomaly',responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,'.mat']    
         end
     end
+    save(saveName, 'meanPredGrid');
 
     %% PLOTTING
     if isPlot
