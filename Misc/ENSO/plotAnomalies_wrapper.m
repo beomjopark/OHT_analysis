@@ -1,7 +1,7 @@
 %% Wrapper function for localMLE and Anomaly Prediction
 %% Run after selection / Merge and MeanField
-addpath(genpath('../gsw_matlab'));
 addpath(genpath('./cbrewer'));
+addpath(genpath('../..'));
 
 %% Parameters
 Params_LatFlux_Step2
@@ -19,11 +19,6 @@ if is2step && strcmp(typeTag, 'int') % This case is for intlatflux/intlonflux
     fprintf('Target pressure: %d to %d\n', min(intStartList), max(intStartList));
     typeTag = strcat(typeTag, targetVar); %'intlatlon'
     verticalSelection = strcat(num2str(min(intStartList)),'_',num2str(max(intStartList)));
-
-%    plotAnomaliesMovie(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, meanTag, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, fluxType, eqBorder, isAdjusted, isAbsolute);
-%   plotAnomaliesHov(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, fluxType, eqBorder, isAdjusted, isAbsolute, nAdjust, iterEM, ...
-%    	[190, 240]);
-
     
     plotIndices;
     close all;
