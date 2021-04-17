@@ -24,16 +24,18 @@ export SHELL=/bin/bash
 
 echo "iterEM: ${iter}"
 echo "Month: ${mon}"
+echo "Target direction: ${target}"
 
 matCMD="Params_LatFlux_Step2, "
+matCMD+="targetVar = '${target}', "
 matCMD+="typeTag = 'int', "
 matCMD+="fluxType = 'heat', "
 matCMD+="refPres = 900, "
 
-matCMD+="intStartList = [10, 15, 20, 30, 50, 75, 100, 125, 150, 200, 250, 300, 400, 500, 600, 700, 800], "
+#matCMD+="intStartList = [10, 15, 20, 30, 50, 75, 100, 125, 150, 200, 250, 300, 400, 500, 600, 700, 800], "
 #matCMD+="intStartList =[10, 15, 20, 30, 50, 75, 100], "
 #matCMD+="intStartList = [100, 125, 150, 200, 250, 300], "
-#matCMD+="intStartList = [300, 400, 500, 600, 700, 800, 900], "
+matCMD+="intStartList = [300, 400, 500, 600, 700, 800, 900], "
 
 matCMD+="month = ${mon}, "
 matCMD+="nIterEM = ${iter}, "

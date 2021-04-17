@@ -20,7 +20,7 @@ meanTag = 'NoTrend';
 kernelType = 'Matern' %'Matern'; %'ExpGeom'
 targetVar = 'lat' % 'lon'
 %}
-isAdjusted = true
+isAdjusted = false%true
 isAbsolute = true
 iterEM = 3
 

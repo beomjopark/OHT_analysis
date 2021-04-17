@@ -25,8 +25,11 @@ export SHELL=/bin/bash
 ### Run the executable
 echo "iterEM: ${iter}"
 echo "Month: ${mon}"
+echo "Target direction: ${target}"
 
 matCMD="Params_LatFlux_Step2, "
+matCMD+="targetVar = '${target}', "
+
 matCMD+="typeTag = 'int', "
 matCMD+="fluxType = 'heat', "
 matCMD+="isDeriv = false, "
