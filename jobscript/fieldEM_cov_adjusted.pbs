@@ -17,7 +17,7 @@
 #PBS -M beomjop@andrew.cmu.edu
 
 ##$ Load Matlab
-module load matlab/R2019a
+module load matlab
 
 ### Use bash
 export SHELL=/bin/bash
@@ -34,7 +34,7 @@ then
     echo "Non-Adjusted!"
     matCMD+="isAdjusted = false,"
 else
-    matCMD="isAdjusted = true, "
+    matCMD+="isAdjusted = true, "
 fi
 
 matCMD+="month = ${mon}, "
@@ -53,6 +53,5 @@ matCMD+="exit"
 echo "${matCMD}"
 
 matlab -nodisplay -r "${matCMD}"
-#matlab -nodisplay -r "Params_LatFlux_Step1, estimateFieldEM_wrapper, exit"
 
-# qsub -v iter=0,mon=1,nAdjust=1 fieldEM_cov.pbs
+# qsub -v mon=11,iter=3 fieldEM.pbs

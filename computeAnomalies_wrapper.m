@@ -4,45 +4,9 @@ addpath(genpath('../gsw_matlab'));
 addpath(genpath('./Util'));
 addpath(genpath('../OHC_dynamics'));
 
-%% Parameters
-%{
-kernelType = 'Matern' %'Matern'; %'ExpGeom'
-month = 2
-
-dataYear = '_2007_2018' % Use Merged Data
-windowSize = 5
-minNumberOfObs = 20
-
-typeTag = 'int' % target; % 'lat' 'lon'
-responseTag = 'Dens' %'Sal'; 'Temp'; %'Flux'; if is2step
-
-% If gridding OHT, set flag and responseTag, typeTag
-is2step = false %true;
-
-% Derivative Kernel: For Anomaly prediction of velocity
-isDeriv = true
-targetVar = 'lat' % 'lon'
-%}
-
-
-%% Sanity Check: Deprecated
-%{
-if is2step & ~(strcmp(typeTag, 'lat') | strcmp(typeTag, 'lon') | strcmp(responseTag, 'Flux'))
-    error('typeTag should be set to lat or lon!\n');
-end
-%}
-%iterEM = 0 : control from PBS
-
 %% Run Selection
-%% CHECK isProfile
 nCore = feature('numcores')
 refPres = 900
-
-%intStartList = [10, 15, 20, 30, 50, 75, 100, 125, 150, 200, 250, 300, 400, 500, 600, 700, 800] % Full upper ocean
-%{
-intStartList = [1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1850, 1900] % Mid Ocean
-intStartList = [10]
-%}
 
 isMid = (min(intStartList) > 900)
 
@@ -50,16 +14,17 @@ if is2step && strcmp(typeTag, 'int') % This case is for intlatflux/intlonflux
     if isMid
         intStartList = [refPres, intStartList]
     else
-        intStartList = [10, 15, 20, 30, 50, 75, 100, 125, 150, 200, 250, 300, 400, 500, 600, 700, 800] % Full upper ocean from 10 with reflv
-        intStartList = [intStartList, refPres]
+        if intStartList(1) == 10 && intStartList(end) == 800
+            intStartList = [intStartList, refPres]
+        end
     end
     fprintf('Target pressure: %d to %d\n', min(intStartList), max(intStartList));
     typeTag = strcat(typeTag, targetVar); %'intlatlon'
     verticalSelection = strcat(num2str(min(intStartList)),'_',num2str(max(intStartList)));
 
     poolobj = parpool(nCore-1, 'IdleTimeout', 1200);
-    computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, isStandardize, fluxType, eqBorder, isAdjusted, isAbsolute, nAdjust);
-    computeMeanAnomalies(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, meanTag, windowType, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, fluxType, eqBorder, isAdjusted, isAbsolute, nAdjust);
+    computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, isStandardize, fluxType, eqBorder, isAdjusted, isAbsolute, nAdjust, iterEM);
+    computeMeanAnomalies(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, meanTag, windowType, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, fluxType, eqBorder, isAdjusted, isAbsolute, nAdjust, iterEM);    
     delete(poolobj);
 else
     for intStartIdx = 1:numel(intStartList)
@@ -79,14 +44,13 @@ else
             close all;
         end
 
-
+        fprintf('Anomaly Computation')
         if is2step  % This case is for each latflux / lonflux
             poolobj = parpool(20, 'IdleTimeout', 1200);
             computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, isStandardize, fluxType, eqBorder, isAdjusted, isAbsolute, nAdjust, iterEM);
             computeMeanAnomalies(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, meanTag, windowType, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, fluxType, eqBorder, isAdjusted, isAbsolute, nAdjust, iterEM);
         else
             % CHECK TO INCLUDE REFPRESS
-            fprintf('Anomaly Computation')
             if isProfile
                 poolobj = parpool(18, 'IdleTimeout', 1200);
                 if isMid

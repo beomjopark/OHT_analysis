@@ -1,6 +1,6 @@
-# OHT_Analysis
+# SPATIO-TEMPORAL LOCAL INTERPOLATION OF GLOBAL OCEAN HEAT TRANSPORT USING ARGO FLOATS
 
-This repository contains the reproducible code for [*Spatio-Temporal Local Interpolation For Quantifying Global Ocean Heat Transport From Autonomous Observations*](https://www.overleaf.com/read/djzmqmpsmzgn).
+This repository contains the reproducible code for [*SPATIO-TEMPORAL LOCAL INTERPOLATION OF GLOBAL OCEAN HEAT TRANSPORT USING ARGO FLOATS: A DEBIASED LATENT GAUSSIAN PROCESS APPROACH*](https://www.overleaf.com/read/djzmqmpsmzgn).
 
 Data Files and resulting outputs can be accessible from NCAR GLADE file system: `./work/beomjop/OHC_dynamics/Data` and `./work/beomjop/OHC_dynamics/Results`.
 
@@ -54,17 +54,9 @@ Data Files and resulting outputs can be accessible from NCAR GLADE file system: 
 
 
 ## Misc
+
+1. `totalOHT.pbs`
+
+    This job creates a OHT profiles that will be used in the second stage mapping. After running the job, proceed the `filter_XXXFlux.pbs`.
     
-1. `integrateTKE.m`: Compute Total Kinetic Energy based on gridded velocities. This is a standalone code.
-
-
-
-## Known Issues
-
-1. Instability of the local GP estimate
-
-    This requires careful investigation of (A) anomalous profiles and (B) bandwidth parameter.
-
-2. Anomalous profiles
-
-    Can this be ameliorated by using CORA dataset?
+2. `integrateTKE.m`: Compute Total Kinetic Energy based on gridded velocities. This is a standalone code.

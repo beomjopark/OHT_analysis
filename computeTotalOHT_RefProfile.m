@@ -49,12 +49,14 @@ function computeTotalOHT_RefProfile(responseTag, verticalSelection, targetPres, 
     load(['./Results/Step1_',num2str(min(targetPres)),'_',num2str(max(targetPres)),'/anomaly',responseTag,verticalSelection,adjustTag,'SeasonSpaceTime',kernelType,targetVar,'Deriv_Profile','.mat'], 'predRes');
 %}
 
-
+%{
     if isAdjusted
         % Fetch pre-adjusted mean Anomaly: meanPredGrid
         srcFolder = ['anomaly_','int',responseTag,'_w',num2str(windowSize),'_',kernelType,'_',verticalSelection];
 %        load(['./Results/Step1_',num2str(min(targetPres)),'_',num2str(max(targetPres)),'/',srcFolder,'/MeanAnomaly',responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,targetVar,'Deriv','.mat']);
     end
+%}
+
 
     if isAbsolute
         load(['../Misc/AGVA/','meanZonVelRef',num2str(refPres),'.mat'], 'meanRefZonVel');
@@ -95,8 +97,8 @@ function computeTotalOHT_RefProfile(responseTag, verticalSelection, targetPres, 
         predLat = profLatAggrSelRounded(iProf);
         predLong = profLongAggrSelRounded(iProf);
 
-        iLat = find(latLinspace == predLat);
-        iLong = find(longLinspace == predLong);
+        iLat = find(abs(latLinspace - predLat) < 1e-03);
+        iLong = find(abs(longLinspace - predLong) < 1e-03);
     %    iGrid = sub2ind(sizeGrid, find(longLinspace == predLong), find(latLinspace == predLat));
         %{
         % Predict meanField from the nearest grid
@@ -130,12 +132,13 @@ function computeTotalOHT_RefProfile(responseTag, verticalSelection, targetPres, 
 
 
     % filter out NaN whose observation in target but also in int DataMask
-    drop = isnan(profDerivSel);
-    fprintf("Drop %d NaN Observations\n", sum(drop))
+%    drop = isnan(profDerivSel);
     if isAbsolute
-        fprintf("Drop %d Additional from Abs Vel\n", sum(~drop & isnan(profMeanRefVel)));
-        drop = drop | isnan(profMeanRefVel);
+%        fprintf("Drop %d Additional from Abs Vel\n", sum(~drop & isnan(profMeanRefVel)));
+%        drop = drop | isnan(profMeanRefVel);
+        drop = isnan(profMeanRefVel);
         profMeanRefVel = profMeanRefVel(~drop);
+        fprintf("Drop %d NaN Observations\n", sum(drop))
     end
     profLatAggrSel = profLatAggrSel(~drop);
     profLongAggrSel = profLongAggrSel(~drop);
@@ -149,71 +152,36 @@ function computeTotalOHT_RefProfile(responseTag, verticalSelection, targetPres, 
     %Convert Kelvin
     targetTempProf = targetTempProf + 273.16;
     profVelAggr = zeros(1, numel(profDerivSel));
-%{
-    switch targetVar
-        case 'lat'
-            profVelAggr = - profDerivSel ./ gsw_f(profLatAggrSel);
-        case 'lon'
-            profVelAggr = profDerivSel ./ gsw_f(profLatAggrSel);
-    end
-%}
-
-
     if isAbsolute
         profVelAggr = profVelAggr + profMeanRefVel;
     end
 
     % Inflation factor when integrating wrt pressure
     profScaleInt = 1 ./ targetDensProf ./ gsw_grav(profLatAggrSel, intStart);
-    switch targetVar
-        % Just name difference
-        case 'lat'
-            profLatHeatFluxAggr = targetTempProf .* targetDensProf .* profVelAggr;
-            profLatMassFluxAggr = targetDensProf .* profVelAggr;
 
-            % For integrating in pressure, do not need to multiply insitu density
-            profLatVolFluxAggrInt = profVelAggr ./ targetDensProf; % volume
-            profLatHeatFluxAggrInt = targetTempProf .* profVelAggr; % Heat
+    profHeatFluxAggr = targetTempProf .* targetDensProf .* profVelAggr;
+    profMassFluxAggr = targetDensProf .* profVelAggr;
+
+    % For integrating in pressure, do not need to multiply insitu density
+    profVolFluxAggrInt = profVelAggr ./ targetDensProf; % volume
+    profHeatFluxAggrInt = targetTempProf .* profVelAggr; % Heat
 %            profLatMassFluxAggrInt = - profVelAggr; % Mass flux will be integrated from DerivSel
-            saveName = ['./Data/',targetVar,'FluxProf',verticalSelection,dataYear,adjustTag,absoluteTag,'.mat'];
 
-            if isAbsolute
-                save(saveName,...
-                'profLatAggrSel','profLongAggrSel','profJulDayAggrSel',...
-                'profLatHeatFluxAggr', 'profLatMassFluxAggr', 'profVelAggr',...
-                'profLatHeatFluxAggrInt', 'profDerivSel', 'profLatVolFluxAggrInt', 'profScaleInt',...
-                'intStart', 'isAdjusted', 'isAbsolute', 'profMeanRefVel');
-            else
-                save(saveName,...
-                'profLatAggrSel','profLongAggrSel','profJulDayAggrSel',...
-                'profLatHeatFluxAggr', 'profLatMassFluxAggr', 'profVelAggr',...
-                'profLatHeatFluxAggrInt', 'profDerivSel', 'profLatVolFluxAggrInt','profScaleInt',...
-                'intStart', 'isAdjusted', 'isAbsolute');
-            end
-        case 'lon'
-            profLonHeatFluxAggr = targetTempProf .* targetDensProf .* profVelAggr;
-            profLonMassFluxAggr = targetDensProf .* profVelAggr;
-
-            % For integrating in pressure, do not need to multiply insitu density
-            profLonVolFluxAggrInt = profVelAggr ./ targetDensProf;
-            profLonHeatFluxAggrInt = targetTempProf .* profVelAggr;
-%            profLonMassFluxAggrInt = - profVelAggr; % Mass flux will be integrated from DerivSel
-            saveName = ['./Data/',targetVar,'FluxProf',verticalSelection,dataYear,adjustTag,absoluteTag,'.mat'];
-
-            if isAbsolute
-                save(saveName,...
-                'profLatAggrSel','profLongAggrSel','profJulDayAggrSel',...
-                'profLonHeatFluxAggr', 'profLonMassFluxAggr', 'profVelAggr',...
-                'profLonHeatFluxAggrInt', 'profDerivSel', 'profLonVolFluxAggrInt','profScaleInt',...
-                'intStart', 'isAdjusted', 'isAbsolute', 'profMeanRefVel');
-            else
-                save(saveName,...
-                'profLatAggrSel','profLongAggrSel','profJulDayAggrSel',...
-                'profLonHeatFluxAggr', 'profLonMassFluxAggr', 'profVelAggr',...
-                'profLonHeatFluxAggrInt', 'profDerivSel', 'profLonVolFluxAggrInt','profScaleInt',...
-                'intStart', 'isAdjusted', 'isAbsolute');
-            end
+    saveName = ['./Data/',targetVar,'FluxProf',verticalSelection,dataYear,adjustTag,absoluteTag,'.mat'];
+    if isAbsolute
+        save(saveName,...
+        'profLatAggrSel','profLongAggrSel','profJulDayAggrSel',...
+        'profHeatFluxAggr', 'profMassFluxAggr', 'profVelAggr',...
+        'profHeatFluxAggrInt', 'profDerivSel', 'profVolFluxAggrInt', 'profScaleInt',...
+        'intStart', 'isAdjusted', 'isAbsolute', 'profMeanRefVel');
+    else
+        save(saveName,...
+        'profLatAggrSel','profLongAggrSel','profJulDayAggrSel',...
+        'profHeatFluxAggr', 'profMassFluxAggr', 'profVelAggr',...
+        'profHeatFluxAggrInt', 'profDerivSel', 'profVolFluxAggrInt','profScaleInt',...
+        'intStart', 'isAdjusted', 'isAbsolute');
     end
+
 
     if isPlot
         % Save directory

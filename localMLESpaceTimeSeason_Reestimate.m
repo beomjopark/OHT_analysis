@@ -109,24 +109,23 @@ function localMLESpaceTimeSeason_Reestimate(kernelType, month, typeTag, response
         if isnumeric(verticalSelection) % intlat/intlon
             targetPres = verticalSelection;
             presString = [num2str(min(targetPres)),'_',num2str(max(targetPres))];
-            load(['./Data/dataMask',typeTag,responseTag,presString,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
+            maskName = ['./Data/dataMask',typeTag,responseTag,presString,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'.mat']
         else
             % For each target Pressure
-            load(['./Data/dataMask',typeTag,responseTag,verticalSelection,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
+            maskName = ['./Data/dataMask',typeTag,responseTag,verticalSelection,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'.mat']
         end
     else
 %{
-        dat = load(['./Data/',typeTag,'TempDens','Prof','PchipPotTemp',verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
-        intStart = dat.intStart;
-
         if numel(intStart) > 1
             load(['./Data/dataMask','Relative',num2str(min(intStart)),'_',num2str(max(intStart)),dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);    
         else
 %}
-            load(['./Data/dataMask',verticalSelection,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);    
+        maskName = ['./Data/dataMask',verticalSelection,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'.mat']
 %        end
 %        clear dat;
     end
+    load(maskName);
+
     maskJohn = ncread('./RG_climatology/RG_ArgoClim_Temperature_2016.nc','BATHYMETRY_MASK',[1 1 25],[Inf Inf 1]);
     maskJohn(maskJohn == 0) = 1;
     maskJohn = [NaN*ones(360,25) maskJohn NaN*ones(360,25)];
@@ -154,6 +153,8 @@ function localMLESpaceTimeSeason_Reestimate(kernelType, month, typeTag, response
     if isProgressbar
         parfor_progress(nGrid);
     end
+
+    opts = optimoptions(@fminunc,'Display','notify','Algorithm','quasi-newton','MaxFunctionEvaluations',1500);
 
     tic;
     for iGrid = reGrid%find(isFminError) %26605:26610%1:nGrid
@@ -238,7 +239,7 @@ function localMLESpaceTimeSeason_Reestimate(kernelType, month, typeTag, response
             switch windowType
                 case 'spherical'
                   is_in_circle = distance(predLat, predLong, profLat3Months(idx), profLong3Months(idx),...
-                                    referenceEllipsoid('GRS80', 'm')) < refDist;
+                                    referenceEllipsoid('WGS84', 'm')) < refDist;
                   idx = idx(is_in_circle);
                 case 'box_var'
                   idx = find(profLatAggrSel > latMin & profLatAggrSel < latMax & profLongAggrSel > longMin & profLongAggrSel < longMax);
@@ -310,7 +311,6 @@ function localMLESpaceTimeSeason_Reestimate(kernelType, month, typeTag, response
 %                logSigmaInit = log(100);
 %        end
         
-        opts = optimoptions(@fminunc,'Display','notify','Algorithm','quasi-newton','MaxFunctionEvaluations',1500);
         if isFminError(iGrid)
             try
                 [paramOpt,nll(iGrid),exitFlags(iGrid),~] = fminunc(fun,[logThetasInit, logThetaLatInit, logThetaLongInit, logThetatInit, logSigmaInit],opts);

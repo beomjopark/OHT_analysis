@@ -216,13 +216,13 @@ function computeTotalOHT_Profile(responseTag, verticalSelection, targetPres, int
 
     % filter out NaN whose observation in target but also in int DataMask
 %    drop = isnan(profDerivSel);
-    fprintf("Drop %d NaN Observations\n", sum(drop))
     if isAbsolute
 %        fprintf("Drop %d Additional from Abs Vel\n", sum(~drop & isnan(profMeanRefVel)));
 %        drop = drop | isnan(profMeanRefVel);
         drop = isnan(profMeanRefVel);
         profMeanRefVel = profMeanRefVel(~drop);
     end
+    fprintf("Drop %d NaN Observations\n", sum(drop))
     profLatAggrSel = profLatAggrSel(~drop);
     profLongAggrSel = profLongAggrSel(~drop);
     profJulDayAggrSel = profJulDayAggrSel(~drop);

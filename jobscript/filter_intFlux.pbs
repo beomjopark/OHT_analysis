@@ -1,0 +1,40 @@
+#!/bin/bash
+### Job Name
+#PBS -N FilterintFlux
+### Project code
+#PBS -A UMEL0001
+#PBS -l walltime=12:00:00
+#PBS -q economy
+### Merge output and error files
+#PBS -j oe
+### Write stdout and stderr on runtime
+#PBS -k oe
+### Select 1 node with 36 CPUs
+#PBS -l select=1:ncpus=36
+### Send email on abort, begin and end
+#PBS -m abe
+### Specify mail recipient
+#PBS -M beomjop@andrew.cmu.edu
+
+##$ Load Matlab
+module load matlab
+
+### Use bash
+export SHELL=/bin/bash
+
+echo "Target direction: ${target}"
+
+matCMD="dataYear = '_2007_2018', Params_LatFlux_Step2, "
+matCMD+="targetVar = '${target}', "
+matCMD+="typeTag = 'int', "
+matCMD+="fluxType = 'heat', "
+
+matCMD+="intStartList = [10, 15, 20, 30, 50, 75, 100, 125, 150, 200, 250, 300, 400, 500, 600, 700, 800], "
+#matCMD+="intStartList =[10, 15, 20, 30, 50, 75, 100], "
+#matCMD+="intStartList = [100, 125, 150, 200, 250, 300], "
+#matCMD+="intStartList = [300, 400, 500, 600, 700, 800, 900], "
+matCMD+="refPres = 900, "
+matCMD+="create_filter_DataMask_wrapper, exit"
+
+### Run the executable
+matlab -nodisplay -nosplash -r "${matCMD}"

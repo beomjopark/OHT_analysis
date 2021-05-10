@@ -40,14 +40,8 @@ function integrateOHT_Profile(intStartList, dataYear, minNumberOfObs, targetVar,
     profHeatFluxAggrSel = zeros(nTargetPres, nProfile);
     profDerivAggrSel = zeros(nTargetPres, nProfile);
     profVolFluxAggrSel = zeros(nTargetPres, nProfile);
-    switch targetVar
-        case 'lat'
-            profHeatFluxAggrSel(1, :) = targetFlux.profLatHeatFluxAggrInt;
-            profVolFluxAggrSel(1, :) = targetFlux.profLatVolFluxAggrInt;
-        case 'lon'
-            profHeatFluxAggrSel(1, :) = targetFlux.profLonHeatFluxAggrInt;
-            profVolFluxAggrSel(1, :) = targetFlux.profLonVolFluxAggrInt;
-    end
+    profHeatFluxAggrSel(1, :) = targetFlux.profHeatFluxAggrInt;
+    profVolFluxAggrSel(1, :) = targetFlux.profVolFluxAggrInt;
     profDerivAggrSel(1, :) = targetFlux.profDerivSel;
     profScaleIntSel(1, :) = 1 ./ gsw_grav(targetFlux.profLatAggrSel, intStart);%targetFlux.profScaleInt;
 
@@ -61,14 +55,8 @@ function integrateOHT_Profile(intStartList, dataYear, minNumberOfObs, targetVar,
             error('Unmatching Float exists!');
         end
         
-        switch targetVar
-            case 'lat'
-                profHeatFluxAggrSel(presIdx, :) = targetFlux.profLatHeatFluxAggrInt;
-                profVolFluxAggrSel(presIdx, :) = targetFlux.profLatVolFluxAggrInt;
-            case 'lon'
-                profHeatFluxAggrSel(presIdx, :) = targetFlux.profLonHeatFluxAggrInt;
-                profVolFluxAggrSel(presIdx, :) = targetFlux.profLonVolFluxAggrInt;
-        end
+        profHeatFluxAggrSel(presIdx, :) = targetFlux.profHeatFluxAggrInt;
+        profVolFluxAggrSel(presIdx, :) = targetFlux.profVolFluxAggrInt;
         profDerivAggrSel(presIdx, :) = targetFlux.profDerivSel;
         profScaleIntSel(presIdx, :) = 1 ./ gsw_grav(targetFlux.profLatAggrSel, intStart);%targetFlux.profScaleInt;
     end
@@ -143,18 +131,10 @@ function integrateOHT_Profile(intStartList, dataYear, minNumberOfObs, targetVar,
         intMassFluxExactProf = intMassFluxExactProf + (targetFlux.profMeanRefVel(~isDrop) .* intScaleProf);
     end
 
-    switch targetVar
-        case 'lat'
-            save(['./Data/int',targetVar,'FluxProf',tag,num2str(min(intStartList)),'_',num2str(max(intStartList)),dataYear,adjustTag,absoluteTag,'.mat'], ...
-                'profLatAggrSel','profLongAggrSel','profYearAggrSel','profJulDayAggrSel', ...
-                'intHeatFluxProf', 'intHeatFluxExactProf', 'intMassFluxProf', 'intMassFluxExactProf', 'intVolFluxProf', 'intVolFluxExactProf',...
-                 'intStart','intEnd', 'isAdjusted', 'isAbsolute');
-        case 'lon'
-            save(['./Data/int',targetVar,'FluxProf',tag,num2str(min(intStartList)),'_',num2str(max(intStartList)),dataYear,adjustTag,absoluteTag,'.mat'], ...
-                'profLatAggrSel','profLongAggrSel','profYearAggrSel','profJulDayAggrSel', ...
-                'intHeatFluxProf','intHeatFluxExactProf', 'intMassFluxProf', 'intMassFluxExactProf', 'intVolFluxProf', 'intVolFluxExactProf',...
-                'intStart','intEnd', 'isAdjusted', 'isAbsolute');
-    end
+    save(['./Data/int',targetVar,'FluxProf',tag,num2str(min(intStartList)),'_',num2str(max(intStartList)),dataYear,adjustTag,absoluteTag,'.mat'], ...
+        'profLatAggrSel','profLongAggrSel','profYearAggrSel','profJulDayAggrSel', ...
+        'intHeatFluxProf', 'intHeatFluxExactProf', 'intMassFluxProf', 'intMassFluxExactProf', 'intVolFluxProf', 'intVolFluxExactProf',...
+         'intStart','intEnd', 'isAdjusted', 'isAbsolute');
 
 
     if isPlot

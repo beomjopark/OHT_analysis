@@ -101,10 +101,10 @@ function localMLESpaceTimeSeason(kernelType, month, typeTag, responseTag, vertic
         if isnumeric(verticalSelection) % intlat/intlon
             targetPres = verticalSelection;
             presString = [num2str(min(targetPres)),'_',num2str(max(targetPres))];
-            load(['./Data/dataMask',typeTag,responseTag,presString,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
+            maskName = ['./Data/dataMask',typeTag,responseTag,presString,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'.mat']
         else
             % For each target Pressure
-            load(['./Data/dataMask',typeTag,responseTag,verticalSelection,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);
+            maskName = ['./Data/dataMask',typeTag,responseTag,verticalSelection,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'.mat']
         end
     else
 %{
@@ -112,10 +112,12 @@ function localMLESpaceTimeSeason(kernelType, month, typeTag, responseTag, vertic
             load(['./Data/dataMask','Relative',num2str(min(intStart)),'_',num2str(max(intStart)),dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);    
         else
 %}
-        load(['./Data/dataMask',verticalSelection,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']);    
+        maskName = ['./Data/dataMask',verticalSelection,dataYear,adjustTag,absoluteTag,'_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'.mat']
 %        end
 %        clear dat;
     end
+    load(maskName);
+
     maskJohn = ncread('./RG_climatology/RG_ArgoClim_Temperature_2016.nc','BATHYMETRY_MASK',[1 1 25],[Inf Inf 1]);
     maskJohn(maskJohn == 0) = 1;
     maskJohn = [NaN*ones(360,25) maskJohn NaN*ones(360,25)];
@@ -137,7 +139,7 @@ function localMLESpaceTimeSeason(kernelType, month, typeTag, responseTag, vertic
         parfor_progress(nGrid);
     end
     
-
+    opts = optimoptions(@fminunc,'Display','notify','Algorithm','quasi-newton','MaxFunctionEvaluations',1500);
     tic;
     parfor iGrid = 1:nGrid
     %for iGrid = 1:nGrid
@@ -293,7 +295,6 @@ function localMLESpaceTimeSeason(kernelType, month, typeTag, responseTag, vertic
 %                logSigmaInit = log(100);
 %        end
         
-        opts = optimoptions(@fminunc,'Display','notify','Algorithm','quasi-newton','MaxFunctionEvaluations',1500);
         try
             [paramOpt,nll(iGrid),exitFlags(iGrid),~] = fminunc(fun,[logThetasInit, logThetaLatInit, logThetaLongInit, logThetatInit, logSigmaInit],opts);
             thetasOpt(iGrid) = exp(paramOpt(1));

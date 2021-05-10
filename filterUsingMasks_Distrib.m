@@ -1,5 +1,5 @@
 function filterUsingMasks_Distrib(typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, isPlot, fluxType, isAdjusted, isAbsolute)
-%% CURRENT: Just filter out the map mask... Not really necessary procedure anymore.
+%% CURRENT: Just filter out the map mask.
     tag = 'PchipPotTemp';
 
     if isempty(windowType)
@@ -14,7 +14,29 @@ function filterUsingMasks_Distrib(typeTag, responseTag, verticalSelection, dataY
           windowTypeTag = []
           windowSizeMargined = windowSize;
     end
+    
+    switch numel(windowSize)
+      case 3
+        windowSizeMean = windowSize(1);
+        windowSizeCov = windowSize(2);
+        windowSizeKrig = windowSize(3);
+      case 2
+        windowSizeMean = windowSize(1);
+        windowSizeCov = windowSize(2);
+        windowSizeKrig = windowSize(1);
+       otherwise
+        windowSizeMean = windowSize;
+        windowSizeCov = windowSize;
+        windowSizeKrig = windowSize;
+    end
 
+    if windowSizeMean == windowSizeCov
+      windowSizeTag = num2str(windowSizeMean)
+    else
+      windowSizeTag = [num2str(windowSizeMean),'_',num2str(windowSizeCov)]
+    end
+    windowSizeFullTag = [windowSizeTag, '_', num2str(windowSizeKrig)]
+    
     if isempty(isAdjusted)
         isAdjusted = false;
     end
@@ -24,8 +46,11 @@ function filterUsingMasks_Distrib(typeTag, responseTag, verticalSelection, dataY
 
     if isAdjusted
         adjustTag = 'Adjusted';
+        adjustNumTag = ['Adjusted', num2str(nAdjust)];
+        windowSizeTag = windowSizeFullTag;
     else
         adjustTag = [];
+        adjustNumTag = [];
     end
 
     if isAbsolute
@@ -49,16 +74,17 @@ function filterUsingMasks_Distrib(typeTag, responseTag, verticalSelection, dataY
         if strcmp(typeTag, 'int')
             presString = ['Relative', presString];
         end
-        data = load(['./Data/',typeTag,responseTag,'Prof',tag,presString,dataYear,adjustTag,absoluteTag,'.mat']);
+        srcName = ['./Data/',typeTag,responseTag,'Prof',tag,presString,dataYear,adjustTag,absoluteTag,'.mat']
     else
         presString = verticalSelection;
         switch responseTag
             case 'Flux'
-                load(['./Data/',typeTag,responseTag,'Prof',verticalSelection,dataYear,adjustTag,absoluteTag,'.mat']);
+                srcName = ['./Data/',typeTag,responseTag,'Prof',verticalSelection,dataYear,adjustTag,absoluteTag,'.mat']
             otherwise
-                load(['./Data/',typeTag,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'.mat']);
+                srcName = ['./Data/',typeTag,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'.mat']
         end
     end
+    data = load(srcName);
 
     intStart = data.intStart;
     intEnd = data.intEnd;
@@ -112,23 +138,23 @@ function filterUsingMasks_Distrib(typeTag, responseTag, verticalSelection, dataY
     keep = logical(keep);
     fprintf("%d / %d (%d) were kept\n", sum(keep), nProf, sum(keep)/nProf);
     
-%{
-    profLatAggrSel = profLatAggrSel(keep);
-    profLongAggrSel = profLongAggrSel(keep);
-    profJulDayAggrSel = profJulDayAggrSel(keep);
-%}
+    profLatAggrSel = data.profLatAggrSel(keep);
+    profLongAggrSel = data.profLongAggrSel(keep);
+    profJulDayAggrSel = data.profJulDayAggrSel(keep);
     switch typeTag
         case 'target'
-            profFloatIDAggrSel = profFloatIDAggrSel(keep);
+            profFloatIDAggrSel = data.profFloatIDAggrSel(keep);
             switch responseTag
                 case 'Temp'
-                    targetTempProf = targetTempProf(:,keep);
-                    save(['./Data/',typeTag,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSize),'.mat'],...
+                    targetTempProf = data.targetTempProf(:,keep);
+                    saveName = ['./Data/',typeTag,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']
+                    save(saveName,...
                         'profLatAggrSel','profLongAggrSel','profJulDayAggrSel',...
                         'targetTempProf','targetPres');
                 case 'Sal'
-                    targetSalProf = targetSalProf(:,keep);
-                    save(['./Data/',typeTag,responseTag,'Prof',tag,verticalSelection,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSize),'.mat'],...
+                    targetSalProf = data.targetSalProf(:,keep);
+                    saveName = ['./Data/',typeTag,responseTag,'Prof',tag,verticalSelection,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']
+                    save(saveName,...
                         'profLatAggrSel','profLongAggrSel','profJulDayAggrSel',...
                         'targetSalProf','targetPres');
             end
@@ -150,60 +176,52 @@ function filterUsingMasks_Distrib(typeTag, responseTag, verticalSelection, dataY
                     intTempProf = data.intTempProf(presIdx, isRetain);
                     intDensProf = data.intDensProf(presIdx, isRetain);
                     targetDynhProf = data.targetDynhProf(presIdx, isRetain);
-                    saveName = ['./Data/intTempDensProf',tag,'Relative',num2str(targetPres(presIdx)),dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSize),'.mat'];
+                    saveName = ['./Data/intTempDensProf',tag,'Relative',num2str(targetPres(presIdx)),dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']
                     save(saveName,...
                         'profLatAggrSel','profLongAggrSel','profYearAggrSel','profJulDayAggrSel','profFloatIDAggrSel',...
                         'intTempProf','intDensProf','targetDynhProf','isRetain','intStart','intEnd');
                 end
             else
-                intTempProf = intTempProf(keep);
-                intDensProf = intDensProf(keep);
-                targetDynhProf = targetDynhProf(keep);
-                saveName = ['./Data/intTempDensProf',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSize),'.mat'];
+                intTempProf = data.intTempProf(keep);
+                intDensProf = data.intDensProf(keep);
+                targetDynhProf = data.targetDynhProf(keep);
+                saveName = ['./Data/intTempDensProf',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']
                 save(saveName,...
                     'profLatAggrSel','profLongAggrSel','profYearAggrSel','profJulDayAggrSel','profFloatIDAggrSel',...
                     'intTempProf','intDensProf','targetDynhProf','intStart','intEnd');
             end
         % Flux
-        case 'lat'
+        case {'lat', 'lon'}
             switch fluxType
                 case 'heat'
-                    profLatFluxAggrSel = profLatFluxAggr(keep);
+                    profFluxAggrSel = data.profFluxAggr(keep);
                 case 'mass'
-                    profLatFluxAggrSel = profLatMassFluxAggr(keep);
+                    profFluxAggrSel = data.profMassFluxAggr(keep);
                 case 'vol'
-                    profLatFluxAggrSel = - profDerivSel(keep) ./ gsw_f(profLatAggrSel);
+                    profFluxAggrSel = data.profDerivSel(keep) ./ gsw_f(profLatAggrSel);
+                    if strcmp(typeTag, 'lat')
+                        profFluxAggrSel = - profFluxAggrSel;
+                    end
             end
-            save(['./Data/',typeTag,fluxType,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSize),'.mat'],...
+            save(['./Data/',typeTag,fluxType,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat'],...
                 'profLatAggrSel','profLongAggrSel','profJulDayAggrSel',...
-                'profLatFluxAggrSel','intStart');
-        case 'lon'
-            switch fluxType
-                case 'heat'
-                    profLonFluxAggrSel = profLonFluxAggr(keep);
-                case 'mass'
-                    profLonFluxAggrSel = profLonMassFluxAggr(keep);
-                case 'vol'
-                    profLonFluxAggrSel = profDerivSel(keep) ./ gsw_f(profLatAggrSel);
-            end
-            save(['./Data/',typeTag,fluxType,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSize),'.mat'],...
-                'profLatAggrSel','profLongAggrSel','profJulDayAggrSel',...
-                'profLonFluxAggrSel','intStart');
+                'profFluxAggrSel','intStart');
         % intFlux
         otherwise % intlatlon
             % Beware of the choice either Exact(take care of grav) or not
             switch fluxType
                 case 'heat'
 %                    intFluxProf = intFluxProf(keep);
-                    intFluxProf = intFluxExactProf(keep);
+                    intFluxProf = data.intHeatFluxExactProf(keep);
                 case 'mass'
 %                    intFluxProf = intMassFluxProf(keep);
-                    intFluxProf = intMassFluxExactProf(keep);
+                    intFluxProf = data.intMassFluxExactProf(keep);
                 case 'vol'
 %                    intFluxProf = intVolFluxProf(keep);
-                    intFluxProf = intVolFluxExactProf(keep);
+                    intFluxProf = data.intVolFluxExactProf(keep);
             end
-            save(['./Data/',typeTag,fluxType,responseTag,'Prof',tag,num2str(min(targetPres)),'_',num2str(max(targetPres)),dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSize),'.mat'],...
+            saveName = ['./Data/',typeTag,fluxType,responseTag,'Prof',tag,num2str(min(targetPres)),'_',num2str(max(targetPres)),dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']
+            save(saveName,...
                 'profLatAggrSel','profLongAggrSel','profJulDayAggrSel',...
                 'intFluxProf','intStart','intEnd');
     end

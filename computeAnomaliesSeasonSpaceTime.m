@@ -153,12 +153,7 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
         if is2step
             resDat = load(['./Data/',typeTag, fluxType,responseTag,'Res',verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'_Eq',num2str(eqBorder),EMTag,'.mat']);
         else
-            if isAdjusted
-                filterTag = ['Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag];%[];
-            else
-                filterTag = ['Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag];
-            end
-            resDat = load(['./Data/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,filterTag,EMTag,'.mat']);
+            resDat = load(['./Data/',typeTag,responseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,EMTag,'.mat']);
         end
         stdRes = resDat.stdRes;
         clear resDat
@@ -166,9 +161,9 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
 
     % Create Destination Folder
     if is2step
-        destFolder = ['anomaly_',typeTag,fluxType,responseTag,adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeFullTag,'_Eq',num2str(eqBorder),'_',kernelType,'_',verticalSelection,'Season_',num2str(month,'%02d'),EMOutTag];
+        destFolder = ['anomaly_',typeTag,fluxType,responseTag,adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeFullTag,'_Eq',num2str(eqBorder),'_',kernelType,'_',verticalSelection,'Season_',num2str(month,'%02d'),EMOutTag]
     else
-        destFolder = ['anomaly_',typeTag,responseTag,adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeFullTag,'_',kernelType,'_',verticalSelection,'Season_',num2str(month,'%02d'),EMOutTag];
+        destFolder = ['anomaly_',typeTag,responseTag,adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeFullTag,'_',kernelType,'_',verticalSelection,'Season_',num2str(month,'%02d'),EMOutTag]
     end
     mkdir(['./Results/',destFolder])
 
@@ -356,17 +351,18 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
                 predVarianceGrid = predVarianceGrid .* (stdRes^2);
             end
             if isDeriv
-                save(['./Results/',destFolder,'/anomaly',responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,targetVar,'Deriv_',...
-                    num2str(predMonth,'%02d'),'_',num2str(predYear),'.mat'],'predGrid','predVarianceGrid','latGrid','longGrid','midJulDay');
+                saveName = ['./Results/',destFolder,'/anomaly',responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,targetVar,'Deriv_',...
+                    num2str(predMonth,'%02d'),'_',num2str(predYear),'.mat'];
             else
                 if is2step
-                    save(['./Results/',destFolder,'/anomaly',typeTag,fluxType,responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,'_',...
-                        num2str(predMonth,'%02d'),'_',num2str(predYear),'.mat'],'predGrid','predVarianceGrid','latGrid','longGrid','midJulDay');                    
+                    saveName = ['./Results/',destFolder,'/anomaly',typeTag,fluxType,responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,'_',...
+                        num2str(predMonth,'%02d'),'_',num2str(predYear),'.mat'];
                 else
-                    save(['./Results/',destFolder,'/anomaly',responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,'_',...
-                            num2str(predMonth,'%02d'),'_',num2str(predYear),'.mat'],'predGrid','predVarianceGrid','latGrid','longGrid','midJulDay');
+                    saveName = ['./Results/',destFolder,'/anomaly',responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,'_',...
+                            num2str(predMonth,'%02d'),'_',num2str(predYear),'.mat'];
                 end
             end
+            save(saveName,'predGrid','predVarianceGrid','latGrid','longGrid','midJulDay');
 
         end 
     end

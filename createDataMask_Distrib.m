@@ -16,6 +16,13 @@ function createDataMask_Distrib(typeTag, responseTag, verticalSelection, dataYea
           windowSizeMargined = windowSize;
     end
 
+    if windowSizeMean == windowSizeCov
+      windowSizeTag = num2str(windowSizeMean)
+    else
+      windowSizeTag = [num2str(windowSizeMean),'_',num2str(windowSizeCov)]
+    end
+    windowSizeFullTag = [windowSizeTag, '_', num2str(windowSizeKrig)]
+
     if isempty(isAdjusted)
         isAdjusted = false;
     end
@@ -25,8 +32,11 @@ function createDataMask_Distrib(typeTag, responseTag, verticalSelection, dataYea
 
     if isAdjusted
         adjustTag = 'Adjusted';
+        adjustNumTag = ['Adjusted', num2str(nAdjust)];
+        windowSizeTag = windowSizeFullTag;
     else
         adjustTag = [];
+        adjustNumTag = [];
     end
 
     if isAbsolute
