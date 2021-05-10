@@ -45,13 +45,27 @@ else
             switch numel(windowSize)
                 case 3
                   windowSizeMean = windowSize(1);
+                  windowSizeCov = windowSize(2);
+                  windowSizeKrig = windowSize(3);
                 case 2
                   windowSizeMean = windowSize(1);
+                  windowSizeCov = windowSize(2);
+                  windowSizeKrig = windowSize(1);                  
                  otherwise
                   windowSizeMean = windowSize;
+                  windowSizeCov = windowSize;
+                  windowSizeKrig = windowSize;
             end
+
+            if windowSizeMean == windowSizeCov
+                windowSizeTag = num2str(windowSizeMean)
+            else
+                windowSizeTag = [num2str(windowSizeMean),'_',num2str(windowSizeCov)]
+            end
+            windowSizeFullTag = [windowSizeTag, '_', num2str(windowSizeKrig)]
+            
             srcMaskName = ['./Data/dataMask',verticalSelection,dataYear,[],[],'_',num2str(minNumberOfObs),windowType,'_w',num2str(windowSizeMean),'.mat'];
-            descMaskName = ['./Data/dataMask',verticalSelection,dataYear,'Adjusted',[],'_',num2str(minNumberOfObs),windowType,'_w',num2str(windowSizeMean),'.mat'];
+            descMaskName = ['./Data/dataMask',verticalSelection,dataYear,'Adjusted',[],'_',num2str(minNumberOfObs),windowType,'_w',windowSizeFullTag,'.mat'];
             system(['cp ', srcMaskName, ' ', descMaskName]);
             fprintf('Refit LocalMLE afterward!');
           end

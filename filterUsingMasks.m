@@ -16,6 +16,13 @@ function filterUsingMasks(typeTag, responseTag, verticalSelection, dataYear, win
         windowSizeKrig = windowSize;
     end
 
+    if windowSizeMean == windowSizeCov
+      windowSizeTag = num2str(windowSizeMean)
+    else
+      windowSizeTag = [num2str(windowSizeMean),'_',num2str(windowSizeCov)]
+    end
+    windowSizeFullTag = [windowSizeTag, '_', num2str(windowSizeKrig)]
+    
     if isempty(windowType)
         windowType = 'box'; % expected 'spherical'
     end
@@ -44,8 +51,11 @@ function filterUsingMasks(typeTag, responseTag, verticalSelection, dataYear, win
 
     if isAdjusted
         adjustTag = 'Adjusted';
+        adjustNumTag = ['Adjusted', num2str(nAdjust)];
+        windowSizeTag = windowSizeFullTag;
     else
         adjustTag = [];
+        adjustNumTag = [];
     end
 
     if isAbsolute

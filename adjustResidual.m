@@ -115,7 +115,7 @@ function adjustResidual(month, kernelType, meanTag, typeTag, responseTag, vertic
     end
 
     % Load meanPredGrid
-    srcFolder = ['anomaly_',typeTag,responseTag,adjustPrevNumTag,[],windowTypeTag,'_w',windowSizeFullTag,'_',kernelType,'_',verticalSelection,'Season_',num2str(month,'%02d'),EMOutTag];
+    srcFolder = ['anomaly_',typeTag,responseTag,adjustPrevNumTag,[],windowTypeTag,'_w',windowSizeFullTag,'_',kernelType,'_',verticalSelection,'Season_',num2str(month,'%02d'),EMOutTag]
     load(['./Results/',srcFolder,'/MeanAnomaly',responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,'.mat']);
   end
  
