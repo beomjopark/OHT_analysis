@@ -1,6 +1,6 @@
 # SPATIO-TEMPORAL LOCAL INTERPOLATION OF GLOBAL OCEAN HEAT TRANSPORT USING ARGO FLOATS
 
-This repository contains the reproducible code for [*SPATIO-TEMPORAL LOCAL INTERPOLATION OF GLOBAL OCEAN HEAT TRANSPORT USING ARGO FLOATS: A DEBIASED LATENT GAUSSIAN PROCESS APPROACH*](https://www.overleaf.com/read/djzmqmpsmzgn).
+This repository contains the reproducible code for [*SPATIO-TEMPORAL LOCAL INTERPOLATION OF GLOBAL OCEAN HEAT TRANSPORT USING ARGO FLOATS: A DEBIASED LATENT GAUSSIAN PROCESS APPROACH*](https://arxiv.org/abs/2105.09707).
 
 Data Files and resulting outputs can be accessible from NCAR GLADE file system: `./work/beomjop/OHC_dynamics/Data` and `./work/beomjop/OHC_dynamics/Results`.
 
