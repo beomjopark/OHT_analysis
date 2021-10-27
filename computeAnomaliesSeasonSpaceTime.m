@@ -310,6 +310,13 @@ function computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag
                 end
                 
                 covObs(1:nRes+1:end) = covObs(1:nRes+1:end) + sigmaOpt_cur.^2;
+
+                % SPD check
+                [~, spdFlag] = chol(covObs);
+                if spdFlag
+                    covObs = nearestSPD(covObs);
+                end
+
                 predGrid(iGrid) = covGridObs * linsolve(covObs, responseResSel, symPDopts);
 %                predGrid(iGrid) = covGridObs * ((covObs + sigmaOpt_cur.^2 * eye(nRes)) \ responseResSel);
                 
