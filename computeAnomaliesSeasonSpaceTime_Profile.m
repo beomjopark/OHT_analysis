@@ -223,6 +223,8 @@ function computeAnomaliesSeasonSpaceTime_Profile(kernelType, month, typeTag, res
 
     symPDopts.POSDEF = true;
     symPDopts.SYM = true;
+    Lopts.LT = true;
+    Uopts.UT = true;
 
     for iYear = startYear:endYear
         for iMonth = 1:12
@@ -341,8 +343,19 @@ function computeAnomaliesSeasonSpaceTime_Profile(kernelType, month, typeTag, res
                 end
                 
                 covObs = covObs + sigmaOpt_cur.^2 * eye(nRes);
+
+                % SPD check
+                [L, spdFlag] = chol(covObs, 'lower');
+                if spdFlag
+                    covObs = nearestSPD(covObs);
+                    [L, spdFlag] = chol(covObs, 'lower');
+                end
+
+                predResTemp(iProf) = covGridObs * linsolve(L', linsolve(L, responseResSel, Lopts), Uopts);
+%                    predResTemp(iProf) = covGridObs * linsolve(covObs, responseResSel, symPDopts);
+%                    predResTemp(iProf) = covGridObs * (covObs \ responseResSel);
                 try
-                    predResTemp(iProf) = covGridObs * linsolve(covObs, responseResSel, symPDopts);
+                    v = linsolve(L, covGridObs', Lopts);
                     if isDeriv
                         switch targetVar
                             case 'lat'
@@ -350,12 +363,11 @@ function computeAnomaliesSeasonSpaceTime_Profile(kernelType, month, typeTag, res
                             otherwise
                                 thetaScale2 = thetaLongOpt_cur.^2;
                         end
-                        predVarResTemp(iProf) = 3 * thetasOpt_cur ./ thetaScale2  - covGridObs*linsolve(covObs, covGridObs', symPDopts);
+                        predVarResTemp(iProf) = 3 * thetasOpt_cur ./ thetaScale2  - (v' * v);
                     else
-                        predVarResTemp(iProf) = thetasOpt_cur + sigmaOpt_cur^2 - covGridObs*linsolve(covObs, covGridObs', symPDopts);
+                        predVarResTemp(iProf) = thetasOpt_cur + sigmaOpt_cur^2 - (v' * v);
                     end
                 catch
-                    predResTemp(iProf) = covGridObs * (covObs \ responseResSel);
                     predVarResTemp(iProf) = NaN;
                 end
             end
