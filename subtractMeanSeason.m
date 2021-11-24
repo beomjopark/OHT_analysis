@@ -265,8 +265,14 @@ function subtractMeanSeason(meanTag, typeTag, responseTag, verticalSelection, da
             stdRes = std(FluxRes, 'omitnan');
             FluxRes = FluxRes ./ stdRes;
           end
-          save(['./Data/',typeTag, fluxType,responseTag,'Res',verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'_Eq',num2str(eqBorder),EMTag,'.mat'],...
-      'profLatAggrSel','profLongAggrSel','profJulDayAggrSel','FluxRes', 'stdRes', 'isNanRes');
+          if isempty(targetTempProf)
+            save(['./Data/',typeTag, fluxType,responseTag,'Res',verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'_Eq',num2str(eqBorder),EMTag,'.mat'],...
+              'profLatAggrSel','profLongAggrSel','profJulDayAggrSel','FluxRes', 'stdRes', 'isNanRes');
+          else
+            targetTempProf = targetTempProf(~isNanRes);
+            save(['./Data/',typeTag, fluxType,responseTag,'Res',verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'_Eq',num2str(eqBorder),EMTag,'.mat'],...
+              'profLatAggrSel','profLongAggrSel','profJulDayAggrSel', 'targetTempProf', 'FluxRes', 'stdRes', 'isNanRes');
+          end
     end
   else
     switch responseTag

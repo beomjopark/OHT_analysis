@@ -203,9 +203,16 @@ function filterUsingMasks_Distrib(typeTag, responseTag, verticalSelection, dataY
                         profFluxAggrSel = - profFluxAggrSel;
                     end
             end
-            save(['./Data/',typeTag,fluxType,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat'],...
-                'profLatAggrSel','profLongAggrSel','profJulDayAggrSel',...
-                'profFluxAggrSel','intStart');
+            if isempty(data.targetTempProf)
+                save(['./Data/',typeTag,fluxType,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat'],...
+                    'profLatAggrSel','profLongAggrSel','profJulDayAggrSel',...
+                    'profFluxAggrSel','intStart');
+            else
+                targetTempProf = data.targetTempProf(keep);
+                save(['./Data/',typeTag,fluxType,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat'],...
+                    'profLatAggrSel','profLongAggrSel','profJulDayAggrSel', 'targetTempProf', ...
+                    'profFluxAggrSel','intStart');
+            end            
         % intFlux
         otherwise % intlatlon
             % Beware of the choice either Exact(take care of grav) or not

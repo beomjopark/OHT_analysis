@@ -116,8 +116,14 @@ function divideDataToMonthsSeason(meanTag, typeTag, responseTag, verticalSelecti
                       'profLatAggrMonth','profLongAggrMonth','profJulDayAggrMonth','intFluxResMonth');
                     otherwise
                         FluxResMonth = FluxRes(idx);
-                        save(saveName,...
-                      'profLatAggrMonth','profLongAggrMonth','profJulDayAggrMonth','FluxResMonth');
+                        if isempty(targetTempProf)
+                            save(saveName,...
+                                  'profLatAggrMonth','profLongAggrMonth','profJulDayAggrMonth','FluxResMonth');
+                        else
+                            targetTempProfMonth = targetTempProf(idx);
+                            save(saveName,...
+                                  'profLatAggrMonth','profLongAggrMonth','profJulDayAggrMonth','FluxResMonth', 'targetTempProfMonth');
+                        end
                 end
             else        
 %                profFloatIDAggrMonth = profFloatIDAggrSel(idx);
