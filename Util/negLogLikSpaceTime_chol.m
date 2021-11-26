@@ -56,9 +56,12 @@ for iYear = 1:nYear
 %}   
     %tic;
     K = covObs + sigma.^2*eye(nRes);
-    [L, spdFlag] = chol((K + K') ./ 2, 'lower');
+    K = (K + K') ./ 2;
+    [L, spdFlag] = chol(K, 'lower');
     if spdFlag
-        covObs = nearestSPD(covObs);
+%        covObs = nearestSPD(K);
+        [L, DMC, P] = modchol_ldlt(K);
+        covObs = P'*L*DMC*L'*P;
         [L, spdFlag] = chol(covObs, 'lower');
     end
     
