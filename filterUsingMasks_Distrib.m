@@ -87,8 +87,11 @@ function filterUsingMasks_Distrib(typeTag, responseTag, verticalSelection, dataY
     data = load(srcName);
 
     intStart = data.intStart;
-    intEnd = data.intEnd;
-
+    if isfield(data, 'intEnd')
+        intEnd = data.intEnd;
+    else
+        intEnd = intStart;
+    end
     % Load Mask
 %{
     switch typeTag
@@ -213,6 +216,29 @@ function filterUsingMasks_Distrib(typeTag, responseTag, verticalSelection, dataY
                     'profLatAggrSel','profLongAggrSel','profJulDayAggrSel', 'targetTempProf', ...
                     'profFluxAggrSel','intStart');
             end            
+        % ESAFlux??
+        case {'ESAlat', 'ESAlon'}
+            switch fluxType
+                case 'heat'
+                    profFluxAggrSel = data.profHeatFluxAggr(keep);
+                case 'mass'
+                    profFluxAggrSel = data.profMassFluxAggr(keep);
+                case 'vol'
+                    profFluxAggrSel = data.profDerivSel(keep) ./ gsw_f(profLatAggrSel);
+                    if strcmp(typeTag, 'lat')
+                        profFluxAggrSel = - profFluxAggrSel;
+                    end
+            end
+            if isempty(data.targetTempProf)
+                save(['./Data/',typeTag,fluxType,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat'],...
+                    'profLatAggrSel','profLongAggrSel','profJulDayAggrSel',...
+                    'profFluxAggrSel','intStart');
+            else
+                targetTempProf = data.targetTempProf(keep);
+                save(['./Data/',typeTag,fluxType,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat'],...
+                    'profLatAggrSel','profLongAggrSel','profJulDayAggrSel', 'targetTempProf', ...
+                    'profFluxAggrSel','intStart');
+            end                        
         % intFlux
         otherwise % intlatlon
             % Beware of the choice either Exact(take care of grav) or not
