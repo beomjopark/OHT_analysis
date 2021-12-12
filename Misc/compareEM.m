@@ -15,8 +15,8 @@ longDistGrid = 1 ./ distance(latGrid, longGrid - 0.5, latGrid, longGrid + 0.5,..
                         referenceEllipsoid('WGS84', 'm'));
 
 % 0. Load estimates
-%emIters = [0:8, 10];
-%iters = ["EM0", "EM1", "EM2", "EM3", "EM4", "EM5", "EM6", "EM7", "EM8", "EM10"]
+%emIters = [0:8];
+%iters = ["EM0", "EM1", "EM2", "EM3", "EM4", "EM5", "EM6", "EM7", "EM8"]
 emIters = [0:5];
 iters = ["EM0", "EM1", "EM2", "EM3", "EM4", "EM5"]
 iterString = iters;
@@ -25,14 +25,18 @@ ARGO = cell2struct(cell(numel(iters), 1), cellstr(iters));
 for iiter = 1:length(iters)
     iter = iters(iiter);
     iterStr = iterString(iiter);
-    ARGO.(iter).mean = load(join(['./Results/meanFieldDUACSNoTrendPchipPotTempRelative10_2007_2018spherical_w4_20',iterStr,'.mat'], ""));
+    ARGO.(iter).mean = load(join(['./Results/EMCompare/meanFieldDUACSNoTrendPchipPotTempRelative10_2007_2018spherical_w4_20',iterStr,'.mat'], ""));
     ARGO.(iter).mean.zonAbsVel = (- ARGO.(iter).mean.betaGrid(:,:,iLat) .* latDistGrid ./ gsw_f(latGrid)) .* gsw_grav(latGrid);
     ARGO.(iter).mean.merAbsVel = ARGO.(iter).mean.betaGrid(:,:,iLong) .* longDistGrid ./ gsw_f(latGrid) .* gsw_grav(latGrid);
-    ARGO.(iter).anomFolder = join(['./Results/anomaly_intDUACSspherical_w4_4_Matern_Relative10Season_11',iterStr,'/'], "");
+    if iiter == 6
+        ARGO.(iter).anomFolder = join(['./Results/anomaly_intDUACSspherical_w4_4_Matern_Relative10Season_11',iterStr,'/'], "");
+    else
+        ARGO.(iter).anomFolder = join(['./Results/EMCompare/anomaly_intDUACSspherical_w4_4_Matern_Relative10Season_11',iterStr,'/'], "");
+    end
     ARGO.(iter).mean.norm = vecnorm(ARGO.(iter).mean.betaGrid, 2, 3);
 end
 
-eqBorder = 1%1%3
+eqBorder = 2%1%3
 eqmask = ~(ARGO.(iters(1)).mean.latGrid < eqBorder & ARGO.(iters(1)).mean.latGrid > - eqBorder) .* 1;
 eqmask(eqmask == 0) = NaN;
 
@@ -94,7 +98,7 @@ ylimit = [-0.45, 0.45]; % raw version
 
 
 DUACSFolder = 'D:\dataset-duacs-rep-global-merged-allsat-phy-l4';
-monList = 11%1:12 %11 %1:12
+monList = 11 %1:12
 nMon = length(monList)%12;
 DUACS = struct('zonVel', struct(), 'merVel', struct(), 'adt', struct());
 nEM = length(iters)
@@ -162,7 +166,9 @@ for year = 2007:2018
             DUACS.adt.mse(cnt, iiter) = (median((DSADT.adtInterp - ARGO.(iter).fulladt.*nanMask(:,:,1)) .^2, 'all', 'omitnan'));
             DUACS.adt.sdse(cnt, iiter) = (std((DSADT.adtInterp - ARGO.(iter).fulladt.*nanMask(:,:,1)) .^2, 1, 'all', 'omitnan'));
             DUACS.adt.mad(cnt, iiter) = (median(abs(DSADT.adtInterp - ARGO.(iter).fulladt.*nanMask(:,:,1)), 'all', 'omitnan'));
+ %           ARGO.(iter).llk = log(normpdf(DSADT.adtInterp, ARGO.(iter).fulladt.*nanMask(:,:,1), ARGO.(iter).fulladtsd));
             ARGO.(iter).llk = log(normpdf(DSADT.adtInterp, ARGO.(iter).fulladt.*nanMask(:,:,1), ARGO.(iter).fulladtsd));
+            
             ARGO.(iter).llk(ARGO.(iter).llk < log(1e-20)) = 0;
             infMask = infMask & ~isinf(ARGO.(iter).llk);
         end
@@ -179,7 +185,7 @@ for year = 2007:2018
             DUACS.zonVel.sdse(cnt, iiter) = (std((DS.ugosInterp - ARGO.(iter).fullzonVel.*nanMask(:,:,2)) .^2 .* eqmask, 1, 'all', 'omitnan'));
             DUACS.zonVel.mad(cnt, iiter) = (median(abs(DS.ugosInterp - ARGO.(iter).fullzonVel.*nanMask(:,:,2)) .* eqmask, 'all', 'omitnan'));
             ARGO.(iter).llk = log(normpdf(DS.ugosInterp, ARGO.(iter).fullzonVel.*nanMask(:,:,2), ARGO.(iter).fullzonVelsd));
-            ARGO.(iter).llk(ARGO.(iter).llk < log(1e-20)) = 0;            
+ %           ARGO.(iter).llk(ARGO.(iter).llk < log(1e-20)) = 0;            
             infMask = infMask & ~isinf(ARGO.(iter).llk);
         end
         for iiter = 1:nEM
@@ -199,7 +205,7 @@ for year = 2007:2018
             DUACS.merVel.sdse(cnt, iiter) = (std((DS.vgosInterp - ARGO.(iter).fullmerVel.*nanMask(:,:,3)) .^2 .* eqmask, 1, 'all', 'omitnan'));
             DUACS.merVel.mad(cnt, iiter) = (median(abs(DS.vgosInterp - ARGO.(iter).fullmerVel.*nanMask(:,:,3)) .* eqmask, 'all', 'omitnan'));
             ARGO.(iter).llk = log(normpdf(DS.vgosInterp, ARGO.(iter).fullmerVel.*nanMask(:,:,3), ARGO.(iter).fullmerVelsd));
-            ARGO.(iter).llk(ARGO.(iter).llk < log(1e-20)) = 0;
+  %          ARGO.(iter).llk(ARGO.(iter).llk < log(1e-20)) = 0;
             infMask = infMask & ~isinf(ARGO.(iter).llk);
         end
         for iiter = 1:nEM
