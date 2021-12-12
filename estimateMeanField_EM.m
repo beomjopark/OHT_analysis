@@ -116,7 +116,7 @@ function estimateMeanField_EM(kernelType, month, meanTag, typeTag, responseTag, 
   else
       if strcmp(responseTag, 'Sal')
           load(['./Data/',typeTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'.mat'])
-      elseif strcmp(responseTag, 'DUACS') || strcmp(responseTag, 'ESA') % ESA TEMP
+      elseif strcmp(responseTag, 'DUACS') || strcmp(responseTag, 'ESA') || strcmp(responseTag, 'SOSITemp') % ESA TEMP
           load(['./Data/',typeTag,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'.mat']);
       else % 'Temp', 'Dens'
           load(['./Data/',typeTag,'TempDens','Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,'.mat']);
@@ -233,8 +233,8 @@ function estimateMeanField_EM(kernelType, month, meanTag, typeTag, responseTag, 
 %              responseProf = [intDensRes intDensRes(leftBoundaryIdx) intDensRes(rightBoundaryIdx)];
           case 'DUACS'
               responseProf = [targetADTProf targetADTProf(leftBoundaryIdx) targetADTProf(rightBoundaryIdx)];
-          case 'ESA'
-              responseProf = [targetSSTProf targetSSTProf(leftBoundaryIdx) targetSSTProf(rightBoundaryIdx)];              
+          case {'ESA', 'SOSITemp'}
+              responseProf = [targetSSTProf targetSSTProf(leftBoundaryIdx) targetSSTProf(rightBoundaryIdx)];
           case 'Sal'
               responseProf = [targetSalProfPchip targetSalProfPchip(leftBoundaryIdx) targetSalProfPchip(rightBoundaryIdx)];
       end

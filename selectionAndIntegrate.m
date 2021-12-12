@@ -224,32 +224,22 @@ function selectionAndIntegrate(dataYear, verticalSelection, intStart, isPlot, iP
         profDensAggrSel{iGrid} = gsw_rho(profAbsSalAggrSel{iGrid}, profConsTempAggrSel{iGrid}, profPresAggrSel{iGrid});
     end
     toc;
-    %{
-    % Compute conservative temperature
-    tic;
-    profConsTempAggrSel = cellfun(@gsw_CT_from_t,profAbsSalAggrSel,profTempAggrSel,profPresAggrSel,'UniformOutput',0);
-    toc;
 
-    % Compute potential temperature (added by Anirban)
+    %% If in case SOSI profiles: Temps are already pt
+    fprintf('Absolute Salinity, Conservative Temperature and in-situ density Computation\n');
     tic;
-    profPotTempAggrSel = cellfun(@gsw_pt_from_t,profAbsSalAggrSel,profTempAggrSel,profPresAggrSel,'UniformOutput',0);
-    toc;
-
-    % Compute in-situ density
-    tic;
-    profDensAggrSel = cellfun(@gsw_rho, profAbsSalAggrSel, profConsTempAggrSel, profPresAggrSel, 'UniformOutput', 0);
-    toc;
-    %}
-%{    
-%    Check infunnel to see inside oceanographic funnel: Approximation is accurate
-    isInFunnel = zeros(1,numel(profAbsSalAggrSel));
-    for iGrid = 1:numel(profAbsSalAggrSel)
-        if(~mod(iGrid, numel(profAbsSalAggrSel)/20))
-            disp([iGrid, '/',numel(profAbsSalAggrSel) ]);
-        end
-        isInFunnel(iGrid) = sum(gsw_infunnel(profAbsSalAggrSel{iGrid}, profConsTempAggrSel{iGrid}, profPresAggrSel{iGrid})) == numel(profAbsSalAggrSel{iGrid});
+    parfor iGrid = 1:numel(profAbsSalAggrSel)
+        % Compute absolute salinity, line below takes ~17 mins to run        
+        profAbsSalAggrSel{iGrid} = gsw_SA_from_SP(profPsalAggrSel{iGrid}, profPresAggrSel{iGrid}, profLongAggrSelTemp(iGrid), profLatAggrSel(iGrid));
+        % Compute conservative temperature
+        profConsTempAggrSel{iGrid} = gsw_CT_from_pt(profAbsSalAggrSel{iGrid}, profTempAggrSel{iGrid});
+        % Compute potential temperature (added by Anirban)
+%SOSI        profPotTempAggrSel{iGrid} = profTempAggrSel{iGrid};
+        % Compute in-situ density
+        profDensAggrSel{iGrid} = gsw_rho(profAbsSalAggrSel{iGrid}, profConsTempAggrSel{iGrid}, profPresAggrSel{iGrid});
     end
-%}
+    toc;    
+
 
     fprintf('Dynamic Height Computation\n');
     targetDynhProf = NaN(nIntStart, nProfile);
@@ -358,6 +348,10 @@ function selectionAndIntegrate(dataYear, verticalSelection, intStart, isPlot, iP
             'profLatAggrSel','profLongAggrSel','profYearAggrSel','profJulDayAggrSel','profFloatIDAggrSel', ...
             'intTempProf', 'intDensProf','targetDynhProf','intStart','intEnd', 'startPresIdx');
     end
+
+        save(saveName,...
+            'profLatAggrSel','profLongAggrSel','profJulDayAggrSel', ...
+            'intTempProf', 'intDensProf','targetDynhProf','intStart','intEnd', 'startPresIdx');
 
     %% Plot the profile
     if isPlot

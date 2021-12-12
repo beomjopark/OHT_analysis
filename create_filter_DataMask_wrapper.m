@@ -89,7 +89,7 @@ else
 
                 fprintf('Target pressure: %d\n', intStart);
                 createDataMask(typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, isAdjusted, isAbsolute);
-                filterUsingMasks_Distrib(typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, false, fluxType, isAdjusted, isAbsolute);
+                filterUsingMasks_Distrib(typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, false, fluxType, isAdjusted, isAbsolute, nAdjust);
             end
  %           delete(poolobj)
     end        

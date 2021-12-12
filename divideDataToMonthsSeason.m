@@ -140,7 +140,7 @@ function divideDataToMonthsSeason(meanTag, typeTag, responseTag, verticalSelecti
                         intDensResMonth = targetADTRes(idx); % NAMING CONVENTION
                         save(saveName,...
                             'profLatAggrMonth','profLongAggrMonth','profJulDayAggrMonth','intDensResMonth');
-                    case 'ESA'
+                    case {'ESA', 'SOSITemp'}
                         intDensResMonth = targetSSTRes(idx); % NAMING CONVENTION
                         save(saveName,...
                             'profLatAggrMonth','profLongAggrMonth','profJulDayAggrMonth','intDensResMonth');                        
