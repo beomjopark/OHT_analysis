@@ -132,8 +132,25 @@ function computeAnomaliesLinearCovariance(kernelType, month, typeTag, responseTa
       case 1
           if is2step
             srcName = ['./Results/localMLESpaceTime',kernelType,typeTag, fluxType,responseTag,verticalSelection,'Season_',num2str(month,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,'_Eq',num2str(eqBorder),EMTag,'.mat']
-            velResponseTag = 'DUACS';
-            srcVelName =  ['./Results/localMLESpaceTime',kernelType,velResponseTag,verticalSelection,'Season_',num2str(month,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w', windowSizeTag,EMTag,'.mat']
+
+            if strcmp(typeTag, 'ESAlat') || strcmp(typeTag, 'ESAlon')
+                velResponseTag = 'DUACS';
+                if isAdjusted
+                    adjustVelNumTag = 'Adjusted1'
+                else
+                    adjustVelNumTag = ''
+                end                
+                srcVelName =  ['./Results/localMLESpaceTime',kernelType,velResponseTag,verticalSelection,'Season_',num2str(month,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustVelNumTag,'',windowTypeTag,'_w', windowSizeTag,EMTag,'.mat']
+            else
+                curPres = str2double(verticalSelection(9:end))
+                velResponseTag = 'Dens';
+                if isAdjusted
+                    adjustVelNumTag = 'Adjusted1'
+                else
+                    adjustVelNumTag = ''
+                end
+                srcVelName =  ['./Results/localMLESpaceTime',kernelType,velResponseTag,verticalSelection,'Season_',num2str(month,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustVelNumTag,'',windowTypeTag,'_w', windowSizeTag,EMTag,'.mat']
+            end
           else
             srcName = ['./Results/localMLESpaceTime',kernelType,responseTag,verticalSelection,'Season_',num2str(month,'%02d'),'_',num2str(startYear),'_',num2str(endYear),adjustNumTag,absoluteTag,windowTypeTag,'_w',windowSizeTag,EMTag,'.mat']
           end
@@ -160,7 +177,7 @@ function computeAnomaliesLinearCovariance(kernelType, month, typeTag, responseTa
     % If rescale needed
     if isStandardize
         if is2step
-            res1Dat = load(['./Data/','int',velResponseTag,'Res',verticalSelection,dataYear,adjustNumTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,EMTag,'.mat'])
+            res1Dat = load(['./Data/','int',velResponseTag,'Res',verticalSelection,dataYear,adjustVelNumTag,'','Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',windowSizeTag,EMTag,'.mat'])
             stdRes1 = res1Dat.stdRes;
             clear res1Dat
 
@@ -356,9 +373,14 @@ function computeAnomaliesLinearCovariance(kernelType, month, typeTag, responseTa
                     case {'lon', 'ESAlon'}
                         distProf = 1 ./ distance(profLatAggrSel, profLongAggrSel - 0.5, profLatAggrSel, profLongAggrSel + 0.5,...
                                         referenceEllipsoid('WGS84', 'm'));
-                end                    
+                end
 
-                scaleFactor = targetTempProfSel .* distProf .* gsw_grav(profLatAggrSel) ./ gsw_f(profLatAggrSel) ;
+                if strcmp(typeTag, 'ESAlat') || strcmp(typeTag, 'ESAlon')
+                    scaleFactor = targetTempProfSel .* distProf .* gsw_grav(profLatAggrSel) ./ gsw_f(profLatAggrSel) ;
+                else
+                    scaleFactor = targetTempProfSel .* distProf ./ gsw_f(profLatAggrSel) ;
+                end
+
                 cov1Obs = (scaleFactor' * scaleFactor) .* cov1step;
                 % SPD check
                 [U1, spdFlag] = chol(cov1Obs, 'upper');
@@ -412,10 +434,13 @@ function computeAnomaliesLinearCovariance(kernelType, month, typeTag, responseTa
   %              end
             end
             toc;
-
+%{
+            % WARNING: DONOT multipy this here! This should be cancelled out!
             if isStandardize
                 predVarianceGrid = predVarianceGrid .* (stdRes^2);
             end
+%}
+
             if isDeriv
 %{
                 saveName = ['./Results/',destFolder,'/anomaly',responseTag,verticalSelection,dataYear,'SeasonSpaceTime',kernelType,targetVar,'Deriv_',...
