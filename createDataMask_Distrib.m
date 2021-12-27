@@ -7,21 +7,38 @@ function createDataMask_Distrib(typeTag, responseTag, verticalSelection, dataYea
         windowType = 'box'; % expected 'spherical'
     end
 
+
+  switch numel(windowSize)
+      case 3
+        windowSizeMean = windowSize(1);
+        windowSizeCov = windowSize(2);
+        windowSizeKrig = windowSize(3);
+      case 2
+        windowSizeMean = windowSize(1);
+        windowSizeCov = windowSize(2);
+        windowSizeKrig = windowSize(1);
+       otherwise
+        windowSizeMean = windowSize;
+        windowSizeCov = windowSize;
+        windowSizeKrig = windowSize;
+  end
+
+  if windowSizeMean == windowSizeCov
+      windowSizeTag = num2str(windowSizeMean)
+  else
+      windowSizeTag = [num2str(windowSizeMean),'_',num2str(windowSizeCov)]
+  end
+  windowSizeFullTag = [windowSizeTag, '_', num2str(windowSizeKrig)]
+
     switch windowType
         case 'spherical'
           windowTypeTag = 'spherical'
-          windowSizeMargined = windowSize * 2;
+          windowSizeMargined = windowSizeMean * 2;
         otherwise
           windowTypeTag = []
-          windowSizeMargined = windowSize;
+          windowSizeMargined = windowSizeMean;
     end
 
-    if windowSizeMean == windowSizeCov
-      windowSizeTag = num2str(windowSizeMean)
-    else
-      windowSizeTag = [num2str(windowSizeMean),'_',num2str(windowSizeCov)]
-    end
-    windowSizeFullTag = [windowSizeTag, '_', num2str(windowSizeKrig)]
 
     if isempty(isAdjusted)
         isAdjusted = false;
@@ -68,6 +85,8 @@ function createDataMask_Distrib(typeTag, responseTag, verticalSelection, dataYea
         data = load(['./Data/',typeTag,responseTag,'Prof',tag,presString,dataYear,adjustTag,absoluteTag,'.mat']);
     else
         switch responseTag
+            case {'Temp', 'Dens'}
+                data = load(['./Data/',typeTag,'TempDens','Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'.mat']);            
             case 'Flux'
                 data = load(['./Data/',typeTag,responseTag,'Prof',verticalSelection,dataYear,adjustTag,absoluteTag,'.mat']);
             otherwise
@@ -81,8 +100,8 @@ function createDataMask_Distrib(typeTag, responseTag, verticalSelection, dataYea
 
     if strcmp(windowType, 'spherical')
         % Determine reference distance
-        refDist = distance(0, 180, 0+windowSize, 180,...
-                                referenceEllipsoid('GRS80', 'm'))
+        refDist = distance(0, 180, 0+windowSizeMean, 180,...
+                                referenceEllipsoid('WGS84', 'm'))
     end
     
     for presIdx = 1:nTargetPres % assuming numeric vector
@@ -99,8 +118,8 @@ function createDataMask_Distrib(typeTag, responseTag, verticalSelection, dataYea
         profJulDayAggrSel = profJulDayAggrSel(isRetain);
 
         % Enable wrap around by duplicating boundary data
-        leftBoundaryIdx = find(profLongAggrSel <= 20 + windowSize);
-        rightBoundaryIdx = find(profLongAggrSel >= 380 - windowSize);
+        leftBoundaryIdx = find(profLongAggrSel <= 20 + windowSizeMargined);
+        rightBoundaryIdx = find(profLongAggrSel >= 380 - windowSizeMargined);
         profLongAggrSel = [profLongAggrSel profLongAggrSel(leftBoundaryIdx) + 360 profLongAggrSel(rightBoundaryIdx) - 360];
         profLatAggrSel = [profLatAggrSel profLatAggrSel(leftBoundaryIdx) profLatAggrSel(rightBoundaryIdx)];
         profJulDayAggrSel = [profJulDayAggrSel profJulDayAggrSel(leftBoundaryIdx) profJulDayAggrSel(rightBoundaryIdx)];

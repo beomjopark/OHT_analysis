@@ -116,8 +116,14 @@ function divideDataToMonthsSeason(meanTag, typeTag, responseTag, verticalSelecti
                       'profLatAggrMonth','profLongAggrMonth','profJulDayAggrMonth','intFluxResMonth');
                     otherwise
                         FluxResMonth = FluxRes(idx);
-                        save(saveName,...
-                      'profLatAggrMonth','profLongAggrMonth','profJulDayAggrMonth','FluxResMonth');
+                        if isempty(targetTempProf)
+                            save(saveName,...
+                                  'profLatAggrMonth','profLongAggrMonth','profJulDayAggrMonth','FluxResMonth');
+                        else
+                            targetTempProfMonth = targetTempProf(idx);
+                            save(saveName,...
+                                  'profLatAggrMonth','profLongAggrMonth','profJulDayAggrMonth','FluxResMonth', 'targetTempProfMonth');
+                        end
                 end
             else        
 %                profFloatIDAggrMonth = profFloatIDAggrSel(idx);
@@ -134,7 +140,7 @@ function divideDataToMonthsSeason(meanTag, typeTag, responseTag, verticalSelecti
                         intDensResMonth = targetADTRes(idx); % NAMING CONVENTION
                         save(saveName,...
                             'profLatAggrMonth','profLongAggrMonth','profJulDayAggrMonth','intDensResMonth');
-                    case 'ESA'
+                    case {'ESA', 'SOSITemp'}
                         intDensResMonth = targetSSTRes(idx); % NAMING CONVENTION
                         save(saveName,...
                             'profLatAggrMonth','profLongAggrMonth','profJulDayAggrMonth','intDensResMonth');                        

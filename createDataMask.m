@@ -91,6 +91,9 @@ function createDataMask(typeTag, responseTag, verticalSelection, dataYear, windo
         load(srcName);
     else
         switch responseTag
+            case {'Temp', 'Dens'}
+                srcName = ['./Data/',typeTag,'TempDens','Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'.mat']
+                load(srcName);            
             case 'Flux'
                 srcName = ['./Data/',typeTag,responseTag,'Prof',verticalSelection,dataYear,adjustTag,absoluteTag,'.mat']
                 load(srcName);

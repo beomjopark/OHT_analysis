@@ -94,6 +94,9 @@ function filterUsingMasks(typeTag, responseTag, verticalSelection, dataYear, win
                 profHeatFluxAggrInt = profHeatFluxAggrInt(~drop);
                 profMassFluxAggr = profMassFluxAggr(~drop);
                 profVelAggr = profVelAggr(~drop);
+            case {'Temp', 'Dens'}
+                srcName = ['./Data/',typeTag,'TempDens','Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'.mat']
+                load(srcName);                
             otherwise
                 load(['./Data/',typeTag,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'.mat']);
         end

@@ -1,4 +1,4 @@
-function filterUsingMasks_Distrib(typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, isPlot, fluxType, isAdjusted, isAbsolute)
+function filterUsingMasks_Distrib(typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, isPlot, fluxType, isAdjusted, isAbsolute, nAdjust)
 %% CURRENT: Just filter out the map mask.
     tag = 'PchipPotTemp';
 
@@ -80,6 +80,8 @@ function filterUsingMasks_Distrib(typeTag, responseTag, verticalSelection, dataY
         switch responseTag
             case 'Flux'
                 srcName = ['./Data/',typeTag,responseTag,'Prof',verticalSelection,dataYear,adjustTag,absoluteTag,'.mat']
+            case {'Temp', 'Dens'}
+                srcName = ['./Data/',typeTag,'TempDens','Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'.mat']
             otherwise
                 srcName = ['./Data/',typeTag,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'.mat']
         end
@@ -87,8 +89,11 @@ function filterUsingMasks_Distrib(typeTag, responseTag, verticalSelection, dataY
     data = load(srcName);
 
     intStart = data.intStart;
-    intEnd = data.intEnd;
-
+    if isfield(data, 'intEnd')
+        intEnd = data.intEnd;
+    else
+        intEnd = intStart;
+    end
     % Load Mask
 %{
     switch typeTag
@@ -186,15 +191,20 @@ function filterUsingMasks_Distrib(typeTag, responseTag, verticalSelection, dataY
                 intDensProf = data.intDensProf(keep);
                 targetDynhProf = data.targetDynhProf(keep);
                 saveName = ['./Data/intTempDensProf',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat']
+%{
                 save(saveName,...
                     'profLatAggrSel','profLongAggrSel','profYearAggrSel','profJulDayAggrSel','profFloatIDAggrSel',...
                     'intTempProf','intDensProf','targetDynhProf','intStart','intEnd');
+%}
+                save(saveName,...
+                    'profLatAggrSel','profLongAggrSel','profJulDayAggrSel',...
+                    'intTempProf','intDensProf','targetDynhProf','intStart','intEnd');                
             end
         % Flux
         case {'lat', 'lon'}
             switch fluxType
                 case 'heat'
-                    profFluxAggrSel = data.profFluxAggr(keep);
+                    profFluxAggrSel = data.profHeatFluxAggrInt(keep);%data.profFluxAggr(keep);
                 case 'mass'
                     profFluxAggrSel = data.profMassFluxAggr(keep);
                 case 'vol'
@@ -203,9 +213,39 @@ function filterUsingMasks_Distrib(typeTag, responseTag, verticalSelection, dataY
                         profFluxAggrSel = - profFluxAggrSel;
                     end
             end
-            save(['./Data/',typeTag,fluxType,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat'],...
-                'profLatAggrSel','profLongAggrSel','profJulDayAggrSel',...
-                'profFluxAggrSel','intStart');
+            if ~isfield(data, 'targetTempProf')
+                save(['./Data/',typeTag,fluxType,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat'],...
+                    'profLatAggrSel','profLongAggrSel','profJulDayAggrSel',...
+                    'profFluxAggrSel','intStart');
+            else
+                targetTempProf = data.targetTempProf(keep);
+                save(['./Data/',typeTag,fluxType,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat'],...
+                    'profLatAggrSel','profLongAggrSel','profJulDayAggrSel', 'targetTempProf', ...
+                    'profFluxAggrSel','intStart');
+            end            
+        % ESAFlux??
+        case {'ESAlat', 'ESAlon'}
+            switch fluxType
+                case 'heat'
+                    profFluxAggrSel = data.profHeatFluxAggr(keep);
+                case 'mass'
+                    profFluxAggrSel = data.profMassFluxAggr(keep);
+                case 'vol'
+                    profFluxAggrSel = data.profDerivSel(keep) ./ gsw_f(profLatAggrSel);
+                    if strcmp(typeTag, 'lat')
+                        profFluxAggrSel = - profFluxAggrSel;
+                    end
+            end
+            if ~isfield(data, 'targetTempProf')
+                save(['./Data/',typeTag,fluxType,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat'],...
+                    'profLatAggrSel','profLongAggrSel','profJulDayAggrSel',...
+                    'profFluxAggrSel','intStart');
+            else
+                targetTempProf = data.targetTempProf(keep);
+                save(['./Data/',typeTag,fluxType,responseTag,'Prof',tag,verticalSelection,dataYear,adjustTag,absoluteTag,'Filtered_',num2str(minNumberOfObs),windowTypeTag,'_w',num2str(windowSizeMean),'.mat'],...
+                    'profLatAggrSel','profLongAggrSel','profJulDayAggrSel', 'targetTempProf', ...
+                    'profFluxAggrSel','intStart');
+            end                        
         % intFlux
         otherwise % intlatlon
             % Beware of the choice either Exact(take care of grav) or not

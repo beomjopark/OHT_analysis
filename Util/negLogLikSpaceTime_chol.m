@@ -32,9 +32,9 @@ for iYear = 1:nYear
     profLatYear = profLatAggr{iYear};
     profLongYear = profLongAggr{iYear};
     profJulDayYear = profJulDayAggr{iYear};
-    intTempResYear = intResidAggr{iYear};
+    profResidYear = intResidAggr{iYear};
     
-    nRes = length(intTempResYear);
+    nRes = length(profResidYear);
     if ~nRes
         continue;
     end
@@ -57,7 +57,17 @@ for iYear = 1:nYear
     %tic;
     K = covObs + sigma.^2*eye(nRes);
     K = (K + K') ./ 2;
-    val = val + 2*sum(log(diag(chol(K)))) + (intTempResYear)'*(K\intTempResYear) + log(2*pi)*nRes;
+    [L, spdFlag] = chol(K, 'lower');
+    if spdFlag
+%        covObs = nearestSPD(K);
+        [L, DMC, P] = modchol_ldlt(K);
+        covObs = P'*L*DMC*L'*P;
+        [L, spdFlag] = chol(covObs, 'lower');
+    end
+    
+    opts.LT = true;
+    v = linsolve(L, profResidYear, opts);
+    val = val + 2*sum(log(diag(L))) + (v' * v) + log(2*pi)*nRes;
     %toc;
     
 end

@@ -46,8 +46,10 @@ else
 
         fprintf('Anomaly Computation')
         if is2step  % This case is for each latflux / lonflux
-            poolobj = parpool(20, 'IdleTimeout', 1200);
+            poolobj = parpool(nCore, 'IdleTimeout', 1200);
+
             computeAnomaliesSeasonSpaceTime(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, isStandardize, fluxType, eqBorder, isAdjusted, isAbsolute, nAdjust, iterEM);
+            computeAnomaliesLinearCovariance(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, windowType, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, isStandardize, fluxType, eqBorder, isAdjusted, isAbsolute, nAdjust, iterEM);            
             computeMeanAnomalies(kernelType, month, typeTag, responseTag, verticalSelection, dataYear, meanTag, windowType, windowSize, minNumberOfObs, is2step, isDeriv, targetVar, fluxType, eqBorder, isAdjusted, isAbsolute, nAdjust, iterEM);
         else
             % CHECK TO INCLUDE REFPRESS

@@ -1,5 +1,5 @@
-function cov = spaceTimeCovarianceMaternDeriv_vec(lat,long,time,thetas,thetaLat,thetaLong,thetat,targetVar)
-%% Derivative of Matern Covariance function 
+function cov = spaceTimeCovarianceMaternHess(lat,long,time,thetas,thetaLat,thetaLong,thetat,targetVar)
+%% Hessian of Matern Covariance function 
 %% with nu = 3/2 : 1 times differentiable sample path
 
     switch targetVar

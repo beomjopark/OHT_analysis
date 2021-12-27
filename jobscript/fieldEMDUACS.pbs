@@ -17,7 +17,7 @@
 #PBS -M beomjop@andrew.cmu.edu
 
 ##$ Load Matlab
-module load matlab/R2019a
+module load matlab/R2020a
 
 ### Use bash
 export SHELL=/bin/bash
